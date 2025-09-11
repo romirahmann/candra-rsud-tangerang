@@ -27,6 +27,7 @@ export function ChecksheetPage() {
   const fetchDataMRt = async () => {
     try {
       const res = await api.get(`/master/datMRt3`);
+      console.log(res.data.data);
       let data = res.data.data;
 
       setAllDataMRt(data);

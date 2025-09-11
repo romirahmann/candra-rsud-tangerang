@@ -397,8 +397,9 @@ const generateFinishinCheecksheet = async (req, res) => {
         { text: "NO MR", bold: true, fillColor: "#D3D3D3" },
         { text: "Nama Pasien", bold: true, fillColor: "#D3D3D3" },
         { text: "Tanggal", bold: true, fillColor: "#D3D3D3" },
+        { text: "Kategori", bold: true, fillColor: "#D3D3D3" },
+        { text: "Layanan", bold: true, fillColor: "#D3D3D3" },
         { text: "Periode Ranap", bold: true, fillColor: "#D3D3D3" },
-        { text: "Nama Dokumen", bold: true, fillColor: "#D3D3D3" },
         { text: "Cheked", bold: true, fillColor: "#D3D3D3" },
       ],
       ...data.map((item) => {
@@ -415,8 +416,9 @@ const generateFinishinCheecksheet = async (req, res) => {
             "",
             "",
             "",
+            item.kategori || "-",
+            item.layanan || "-",
             item.Periode_Ranap || "-",
-            item.namadokumen || "-",
             "",
           ];
         }
@@ -427,8 +429,9 @@ const generateFinishinCheecksheet = async (req, res) => {
           item.NoMR || "-",
           item.NamaPasien || "-",
           dateFormatted,
+          item.kategori || "-",
+          item.layanan || "-",
           item.Periode_Ranap || "-",
-          item.namadokumen || "-",
           "",
         ];
       }),
@@ -487,7 +490,7 @@ const generateFinishinCheecksheet = async (req, res) => {
         },
         {
           table: {
-            widths: ["7%", "7%", "19%", "8%", "8%", "44%", "7%"],
+            widths: ["7%", "7%", "19%", "8%", "30%", "8%", "15%", "7%"],
             body: tableBody,
           },
           margin: [0, 10, 0, 0],
@@ -574,8 +577,9 @@ const generateQcChecksheet = async (req, res) => {
           { text: "NO MR", bold: true, fillColor: "#D3D3D3" },
           { text: "Nama Pasien", bold: true, fillColor: "#D3D3D3" },
           { text: "Tanggal", bold: true, fillColor: "#D3D3D3" },
+          { text: "Kategori", bold: true, fillColor: "#D3D3D3" },
+          { text: "Layanan", bold: true, fillColor: "#D3D3D3" },
           { text: "Periode Ranap", bold: true, fillColor: "#D3D3D3" },
-          { text: "Nama Dokumen", bold: true, fillColor: "#D3D3D3" },
           { text: "Cek Output", bold: true, fillColor: "#D3D3D3" },
           { text: "Cek QC", bold: true, fillColor: "#D3D3D3" },
         ],
@@ -593,8 +597,9 @@ const generateQcChecksheet = async (req, res) => {
               "",
               "",
               "",
+              item.kategori || "-",
+              item.layanan || "-",
               item.Periode_Ranap || "-",
-              item.namadokumen || "-",
               "",
               "",
             ];
@@ -605,8 +610,9 @@ const generateQcChecksheet = async (req, res) => {
             item.NoMR || "-",
             item.NamaPasien || "-",
             dateFormatted,
+            item.kategori || "-",
+            item.layanan || "-",
             item.Periode_Ranap || "-",
-            item.namadokumen || "-",
             "",
             "",
           ];
@@ -663,7 +669,7 @@ const generateQcChecksheet = async (req, res) => {
         },
         {
           table: {
-            widths: ["7%", "7%", "19%", "8%", "9%", "40%", "5%", "5%"],
+            widths: ["7%", "7%", "19%", "8%", "29%", "9%", "12%", "5%", "5%"],
             body: buildTableBody(firstBatch),
           },
           margin: [0, 10, 0, 0],

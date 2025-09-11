@@ -26,8 +26,9 @@ export function TableChecksheet({
       key: "Tanggal",
       render: (val) => moment(val, "DDMMYYYY").format("DD-MM-YYYY"),
     },
+    { header: "Kategori", key: "kategori" },
+    { header: "Layanan", key: "layanan" },
     { header: "Periode Ranap", key: "Periode_Ranap" },
-    { header: "Nama Dokumen", key: "namadokumen" },
   ];
   return (
     <>

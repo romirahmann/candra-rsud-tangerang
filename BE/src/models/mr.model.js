@@ -186,7 +186,7 @@ const getAllMRt3 = async () => {
   let query = `
     SELECT 
       NoUrut, NoMR, NamaPasien, Tanggal, Kode_Checklist, 
-      namadokumen, Periode_Ranap
+      namadokumen, Periode_Ranap, layanan, namadokumen, kategori
     FROM tblDataMRt3
   `;
   // if (q && q.trim() !== "") {
@@ -201,7 +201,7 @@ const getAllMRt3 = async () => {
 const getMRt3ByKodeChecklist = async (kode_checklist) => {
   const db = getDBKcp();
   let query = `
-    SELECT NoUrut, Periode_Ranap, NoMR, NamaPasien, Tanggal, Kode_Checklist, namadokumen 
+    SELECT NoUrut, Periode_Ranap, NoMR, NamaPasien, Tanggal, Kode_Checklist, layanan, kategori 
     FROM tblDataMRt3
     WHERE Kode_Checklist = '${kode_checklist}'
   `;
