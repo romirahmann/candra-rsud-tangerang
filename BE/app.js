@@ -2,6 +2,10 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
+const path = require("path");
+const fs = require("fs");
+
+// Database & services
 const { connectDB } = require("./src/database/db.config");
 const { connectDB2 } = require("./src/database/update.config");
 const mainRoutes = require("./src/routes/routes");
@@ -43,18 +47,41 @@ app.use((req, res) => {
   });
 });
 
-// Jalankan server setelah DB terkoneksi
+// ✅ Path frontend (handle saat dijalankan dari exe)
+let frontendPath;
+if (process.pkg) {
+  // kalau jalan dari exe → ambil relative ke folder exe
+  frontendPath = path.join(path.dirname(process.execPath), "frontend");
+} else {
+  // kalau jalan dari node biasa → ambil relative project
+  frontendPath = path.join(__dirname, "frontend");
+}
+
+if (fs.existsSync(frontendPath)) {
+  console.log("✅ Serving frontend from:", frontendPath);
+  app.use("/candra-rsud-tangerang", express.static(frontendPath));
+} else {
+  console.warn("⚠️ Frontend folder not found:", frontendPath);
+}
+
+// ✅ Global error handler (biar exe nggak langsung close tanpa pesan)
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+});
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection:", reason);
+});
+
+// ✅ Jalankan server setelah DB connect
 Promise.all([connectDB(), connectDB2()])
   .then(() => {
     console.log("✅ All Database connections established");
 
     const PORT = process.env.PORT || 8800;
-    const HOST = process.env.HOST || "localhost";
+    const HOST = process.env.HOST || "0.0.0.0";
+
     server.listen(PORT, HOST, () => {
-      console.log(
-        `🚀 Backend is Running on URL: ${HOST}:${PORT} 
-        `
-      );
+      console.log(`🚀 Backend is Running on URL: http://${HOST}:${PORT}`);
     });
   })
   .catch((err) => {
