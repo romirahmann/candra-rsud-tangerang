@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertMessage } from "../../shared/AlertMessage";
 import api from "../../services/axios.service";
 import { useAuth } from "../../store/AuthContext";
@@ -7,6 +7,7 @@ import { AddLog } from "../../services/log.service";
 
 export function AddDokumen({ onAdd, onClose }) {
   const { user } = useAuth();
+  const [doklins, setDoklins] = useState([]);
   const [formData, setFormData] = useState({
     kodedok: "",
     namadok: "",
@@ -19,11 +20,25 @@ export function AddDokumen({ onAdd, onClose }) {
     type: "",
   });
 
+  useEffect(() => {
+    fetchDoklin();
+  }, []);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const fetchDoklin = async () => {
+    try {
+      let result = await api.get(`/master/doklins`);
+      // console.log(result.data.data);
+      setDoklins(result.data.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -113,14 +128,21 @@ export function AddDokumen({ onAdd, onClose }) {
           >
             Kategori
           </label>
-          <input
-            type="text"
+          <select
             name="kategori"
             id="kategori"
             value={formData.kategori}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded-lg"
-          />
+            required
+          >
+            <option value="">-- Pilih Kategori --</option>
+            {doklins.map((doklin) => (
+              <option key={doklin.code} value={doklin.code}>
+                {doklin.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="btn flex gap-1">
           <button

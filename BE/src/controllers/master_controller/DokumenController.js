@@ -165,6 +165,16 @@ const exportCsv = async (req, res) => {
   }
 };
 
+const getAllDoklins = async (req, res) => {
+  try {
+    const data = await model.getAllDoklin();
+    return api.ok(res, data);
+  } catch (error) {
+    console.error("❌ Error getting all doklin:", error);
+    return api.error(res, "Failed to get doklin", 500);
+  }
+};
+
 module.exports = {
   getAllDokumen,
   getFilterDokumen,
@@ -173,4 +183,5 @@ module.exports = {
   updateDokumen,
   deleteDokumen,
   exportCsv,
+  getAllDoklins,
 };

@@ -366,6 +366,11 @@
     "controller": "MrController.getFilterMRt3"
   },
   {
+    "path": "/doklins",
+    "method": "get",
+    "controller": "DocumentController.getAllDoklins"
+  },
+  {
     "path": "/dokumens",
     "method": "get",
     "controller": "DocumentController.getAllDokumen"

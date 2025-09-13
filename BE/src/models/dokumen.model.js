@@ -55,10 +55,18 @@ const deleteDokumen = async (kode) => {
   return result.count;
 };
 
+const getAllDoklin = async () => {
+  const db = getDB();
+  let query = "SELECT * FROM tblDoklin";
+  const result = await db.query(query);
+  return result;
+};
+
 module.exports = {
   getAllDokumen,
   getByKode,
   createDokumen,
   updateDokumen,
   deleteDokumen,
+  getAllDoklin,
 };
