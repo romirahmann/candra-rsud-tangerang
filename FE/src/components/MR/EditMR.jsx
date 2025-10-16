@@ -44,7 +44,10 @@ export function EditMR({ onEdit, data, onClose }) {
     e.preventDefault();
 
     try {
-      await api.put(`/master/datamr/${data?.NoUrut}/${data?.Kode_Checklist}`);
+      await api.put(
+        `/master/datamr/${data?.NoUrut}/${data?.Kode_Checklist}`,
+        formData
+      );
       onEdit("Edit MR Successfully!");
       AddLog(
         `${user.username} berhasil edit data MR ${data.NoMR}!`,

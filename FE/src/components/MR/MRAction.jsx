@@ -8,6 +8,7 @@ import { Activated } from "./Activeted";
 import { EditMR } from "./EditMR";
 import { NonActive } from "./NonActive";
 import { AlertMessage } from "../../shared/AlertMessage";
+import { ModalDelete } from "../../shared/ModalDeleted";
 
 /* eslint-disable no-unused-vars */
 export function MRAction({ isOpen, type, data, onClose, onAction }) {

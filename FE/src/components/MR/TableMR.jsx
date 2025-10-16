@@ -56,6 +56,7 @@ export function TableMR({
       render: (val) => moment(val.tanggal).format("DD-MM-YYYY"),
     },
     { header: "QTY Image", key: "Qty_Image" },
+    { header: "NoBox", key: "nobox" },
     { header: "Mulai", key: "Mulai" },
     { header: "Selesai", key: "Selesai" },
     { header: "File Path", key: "Filepath" },

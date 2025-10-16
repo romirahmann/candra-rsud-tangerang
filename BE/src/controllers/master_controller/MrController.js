@@ -1,11 +1,12 @@
-const model = require("../../models/mr.model");
-const api = require("../../tools/common");
+const NodeCache = require("node-cache");
+const cache = new NodeCache({ stdTTL: 60 });
 const { Parser } = require("json2csv");
 const fs = require("fs");
 const path = require("path");
 const bwipJs = require("bwip-js");
 const PdfPrinter = require("pdfmake");
-
+const model = require("../../models/mr.model");
+const api = require("../../tools/common");
 const moment = require("moment");
 const ExcelJS = require("exceljs");
 const dayjs = require("dayjs");
@@ -534,17 +535,26 @@ const generateFinishinCheecksheet = async (req, res) => {
 const generateQcChecksheet = async (req, res) => {
   try {
     const { kode_checklist } = req.params;
-    if (!kode_checklist)
+    if (!kode_checklist) {
       return res.status(400).json({ message: "Kode checklist diperlukan!" });
+    }
 
-    // Ambil data dari DB
-    let data = await model.getMRt3ByKodeChecklist(kode_checklist);
-    if (!data || data.length === 0)
-      return res.status(404).json({ message: "Data tidak ditemukan!" });
+    // Cek cache
+    let data = cache.get(kode_checklist);
+    if (!data) {
+      data = await model.getMRt3ByKodeChecklist(kode_checklist);
+      if (!data || data.length === 0) {
+        return res.status(404).json({ message: "Data tidak ditemukan!" });
+      }
+      cache.set(kode_checklist, data);
+    }
+
+    console.log("✅ Kode Checklist:", kode_checklist);
+    console.log("📦 Data:", data.length, "records");
 
     const printer = new PdfPrinter(fonts);
 
-    // Generate barcode sekali
+    // === Generate barcode ===
     let barcodeImage;
     try {
       const barcodeBuffer = await bwipJs.toBuffer({
@@ -560,7 +570,8 @@ const generateQcChecksheet = async (req, res) => {
         width: 150,
         alignment: "right",
       };
-    } catch {
+    } catch (error) {
+      console.warn("⚠️ Gagal generate barcode:", error.message);
       barcodeImage = {
         text: "Barcode tidak tersedia",
         style: "subheader",
@@ -568,66 +579,68 @@ const generateQcChecksheet = async (req, res) => {
       };
     }
 
-    // Fungsi membuat tabel per batch
+    // === Bangun tabel data ===
     const buildTableBody = (rows) => {
       const displayedEntries = new Set();
-      return [
-        [
-          { text: "No Urut", bold: true, fillColor: "#D3D3D3" },
-          { text: "NO MR", bold: true, fillColor: "#D3D3D3" },
-          { text: "Nama Pasien", bold: true, fillColor: "#D3D3D3" },
-          { text: "Tanggal", bold: true, fillColor: "#D3D3D3" },
-          { text: "Kategori", bold: true, fillColor: "#D3D3D3" },
-          { text: "Layanan", bold: true, fillColor: "#D3D3D3" },
-          { text: "Periode Ranap", bold: true, fillColor: "#D3D3D3" },
-          { text: "Cek Output", bold: true, fillColor: "#D3D3D3" },
-          { text: "Cek QC", bold: true, fillColor: "#D3D3D3" },
-        ],
-        ...rows.map((item) => {
-          const key = `${item.NamaPasien || "-"}-${item.NoMR || "-"}-${
-            item.Tanggal || "-"
-          }`;
-          const dateFormatted = item.Tanggal
-            ? dayjs(item.Tanggal, "DDMMYYYY").format("DD-MM-YYYY")
-            : "-";
+      const header = [
+        { text: "No Urut", bold: true, fillColor: "#D3D3D3" },
+        { text: "NO MR", bold: true, fillColor: "#D3D3D3" },
+        { text: "Nama Pasien", bold: true, fillColor: "#D3D3D3" },
+        { text: "Tanggal", bold: true, fillColor: "#D3D3D3" },
+        { text: "Kategori", bold: true, fillColor: "#D3D3D3" },
+        { text: "Layanan", bold: true, fillColor: "#D3D3D3" },
+        { text: "Periode Ranap", bold: true, fillColor: "#D3D3D3" },
+        { text: "Cek Output", bold: true, fillColor: "#D3D3D3" },
+        { text: "Cek QC", bold: true, fillColor: "#D3D3D3" },
+      ];
 
-          if (displayedEntries.has(key)) {
-            return [
-              item.NoUrut || "-",
-              "",
-              "",
-              "",
-              item.kategori || "-",
-              item.layanan || "-",
-              item.Periode_Ranap || "-",
-              "",
-              "",
-            ];
-          }
-          displayedEntries.add(key);
+      const body = rows.map((item) => {
+        const key = `${item.NamaPasien || "-"}-${item.NoMR || "-"}-${
+          item.Tanggal || "-"
+        }`;
+        const dateFormatted = item.Tanggal
+          ? dayjs(item.Tanggal, "DDMMYYYY").format("DD-MM-YYYY")
+          : "-";
+
+        if (displayedEntries.has(key)) {
           return [
             item.NoUrut || "-",
-            item.NoMR || "-",
-            item.NamaPasien || "-",
-            dateFormatted,
+            "",
+            "",
+            "",
             item.kategori || "-",
             item.layanan || "-",
             item.Periode_Ranap || "-",
             "",
             "",
           ];
-        }),
-      ];
+        }
+
+        displayedEntries.add(key);
+        return [
+          item.NoUrut || "-",
+          item.NoMR || "-",
+          item.NamaPasien || "-",
+          dateFormatted,
+          item.kategori || "-",
+          item.layanan || "-",
+          item.Periode_Ranap || "-",
+          "",
+          "",
+        ];
+      });
+
+      return [header, ...body];
     };
 
-    // Ambil batch pertama (MAX_ROWS_PER_PDF)
+    // === Siapkan dokumen PDF ===
     const firstBatch = data.slice(0, MAX_ROWS_PER_PDF);
-
     const docDefinition = {
       pageSize: "A4",
       pageMargins: [20, 30, 20, 30],
       content: [
         { text: "QC CHECK SHEET A4", style: "header" },
+
         {
           table: {
             widths: ["70%", "30%"],
@@ -638,6 +651,7 @@ const generateQcChecksheet = async (req, res) => {
           layout: "noBorders",
           margin: [0, 10, 0, 0],
         },
+
         {
           table: {
             widths: ["45%", "15%", "40%"],
@@ -667,6 +681,7 @@ const generateQcChecksheet = async (req, res) => {
           },
           layout: "noBorders",
         },
+
         {
           table: {
             widths: ["7%", "7%", "19%", "8%", "29%", "9%", "12%", "5%", "5%"],
@@ -693,7 +708,7 @@ const generateQcChecksheet = async (req, res) => {
       }),
     };
 
-    // Stream PDF ke response
+    // === Kirim PDF sebagai response ===
     const pdfDoc = printer.createPdfKitDocument(docDefinition);
     res.setHeader(
       "Content-Disposition",
@@ -710,6 +725,7 @@ const generateQcChecksheet = async (req, res) => {
 
 const updateMRt3 = async (req, res) => {
   const data = req.body;
+
   try {
     let result = await model.updateDataMRt3(data);
     return api.ok(res, result);

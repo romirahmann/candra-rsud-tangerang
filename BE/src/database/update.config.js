@@ -27,6 +27,26 @@ const dbPaths = {
       "\\\\192.168.9.251\\padaprima\\DBASE\\RSUD. KABUPATEN\\DBASE\\dbDataKcp.mdb",
   },
 };
+// const dbPaths = {
+//   data: {
+//     primary: "O:\\DBASE\\dbTemp\\dbData.mdb",
+//     fallback:
+//       "\\\\192.168.9.251\\padaprima\\DBASE\\COBA\\DBASE\\dbTemp\\dbData.mdb",
+//   },
+//   qty: {
+//     primary: "O:\\DBASE\\dbTemp\\dbQty.mdb",
+//     fallback:
+//       "\\\\192.168.9.251\\padaprima\\DBASE\\COBA\\DBASE\\dbTemp\\dbQty.mdb",
+//   },
+//   realQty: {
+//     primary: "O:\\DBASE\\dbQty.mdb",
+//     fallback: "\\\\192.168.9.251\\padaprima\\DBASE\\COBA\\DBASE\\dbQty.mdb",
+//   },
+//   kcp: {
+//     primary: "O:\\DBASE\\dbDataKcp.mdb",
+//     fallback: "\\\\192.168.9.251\\padaprima\\DBASE\\COBA\\DBASE\\dbDataKcp.mdb",
+//   },
+// };
 
 function logPath(label, filePath) {
   console.log(`[CHECK] ${label}`);

@@ -27,7 +27,7 @@ export function ChecksheetPage() {
   const fetchDataMRt = async () => {
     try {
       const res = await api.get(`/master/datMRt3`);
-      console.log(res.data.data);
+      // console.log(res.data.data);
       let data = res.data.data;
 
       setAllDataMRt(data);
@@ -67,6 +67,7 @@ export function ChecksheetPage() {
     switch (type) {
       case "QC":
         try {
+          console.log(query);
           let res = await api.get(`/master/qc-checksheet/${query}`, {
             responseType: "blob",
           });
