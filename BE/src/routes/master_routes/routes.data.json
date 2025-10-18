@@ -419,5 +419,10 @@
     "path": "/log",
     "method": "post",
     "controller": "LogController.addLog"
+  },
+  {
+    "path": "/entry-log",
+    "method": "get",
+    "controller": "LogController.viewLogEntry"
   }
 ]

@@ -6,6 +6,7 @@ import { ChartUtama } from "../../components/dashboard/ChartUtama";
 import { TableRealTime } from "../../components/dashboard/TableRealTime";
 import { TargetChart } from "../../components/dashboard/TargetChart";
 import { CountFiles } from "../../components/dashboard/CountFiles";
+import { EntryLog } from "../../components/log/EntryLog";
 
 export function Dashboard() {
   const handleSearch = () => {};
@@ -24,8 +25,10 @@ export function Dashboard() {
         <div className="summary p-2">
           <Summary />
         </div>
-        <div className="countFIle ">
-          <CountFiles />
+        <div className="countFIle  ">
+          <div className="">
+            <CountFiles />
+          </div>
         </div>
         <div className="progressChart p-2">
           <ChartUtama />
@@ -39,6 +42,9 @@ export function Dashboard() {
               <TargetChart />
             </div>
           </div>
+        </div>
+        <div className="logEntry p-2">
+          <EntryLog />
         </div>
       </div>
     </>
