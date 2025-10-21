@@ -116,6 +116,15 @@ export function FormScan({ onAdd, onLoadingChange }) {
       return;
     }
 
+    if (!formData.nama_karyawan || !formData.nama_proses) {
+      setAlert({
+        show: true,
+        message: "ID Proses / NIK not valid!",
+        type: "error",
+      });
+      return;
+    }
+
     const newFormData = {
       ...formData,
       mulai: moment().format("HH:mm:ss"),
