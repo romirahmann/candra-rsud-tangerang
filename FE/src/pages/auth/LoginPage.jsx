@@ -67,7 +67,7 @@ export function LoginPage() {
       AddLog(formLogin.username, `Login to Candra `, 0, "LOGIN");
       setAlert({
         show: true,
-        message: `${error.response.data.data}`,
+        message: `Wrong username & password!`,
         type: "error",
       });
     }

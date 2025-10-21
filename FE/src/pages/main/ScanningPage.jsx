@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { TableScan } from "../../components/scanning/TableScan";
 import api from "../../services/axios.service";
 import { AlertMessage } from "../../shared/AlertMessage";
+import { LoadingScreen } from "../../shared/LoadingScreen";
 
 export function ScanningPage() {
   const [dataCandra, setDataCandra] = useState([]);
@@ -17,6 +18,7 @@ export function ScanningPage() {
     message: "",
     type: "warning",
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDataScanning();
@@ -33,6 +35,7 @@ export function ScanningPage() {
           ? data
           : data.filter((item) => item.idproses === filterProses)
       );
+      setLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -43,7 +46,6 @@ export function ScanningPage() {
   };
 
   const handleAdd = (val) => {
-    console.log(val);
     fetchDataScanning();
     setAlert({
       show: true,
@@ -59,28 +61,37 @@ export function ScanningPage() {
 
   return (
     <>
-      <div className="max-w-full">
-        <Titlepage
-          title={`Scanning Proses`}
-          icon={MdDocumentScanner}
-          onSearch={handleSearch}
-        />
-        <div className=" px-2 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 col-1 border rounded-lg shadow-md bg-gray-50">
-            <FormScan onAdd={handleAdd} />
-          </div>
-          <div className="col-span-3 border rounded-lg shadow-md overflow-auto p-5 bg-gray-50">
-            <TableScan
-              data={dataCandra}
-              selectedProses={handleSelectedProses}
-              onAlert={(val) => {
-                setAlert({ show: true, message: val, type: "success" });
-                fetchDataScanning();
-              }}
+      {loading ? (
+        <LoadingScreen />
+      ) : (
+        <>
+          <div className="max-w-full">
+            <Titlepage
+              title={`Scanning Proses`}
+              icon={MdDocumentScanner}
+              onSearch={handleSearch}
             />
+            <div className=" px-2 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="p-4 col-1 border rounded-lg shadow-md bg-gray-50">
+                <FormScan
+                  onAdd={handleAdd}
+                  onLoadingChange={(val) => setLoading(val)}
+                />
+              </div>
+              <div className="col-span-3 border rounded-lg shadow-md overflow-auto p-5 bg-gray-50">
+                <TableScan
+                  data={dataCandra}
+                  selectedProses={handleSelectedProses}
+                  onAlert={(val) => {
+                    setAlert({ show: true, message: val, type: "success" });
+                    fetchDataScanning();
+                  }}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
       <div>
         {alert.show && (
           <AlertMessage

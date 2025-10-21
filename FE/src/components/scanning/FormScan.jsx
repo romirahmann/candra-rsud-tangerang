@@ -6,7 +6,7 @@ import api from "../../services/axios.service";
 import { AlertMessage } from "../../shared/AlertMessage";
 import { AddLog } from "../../services/log.service";
 
-export function FormScan({ onAdd }) {
+export function FormScan({ onAdd, onLoadingChange }) {
   const initialFormData = {
     kode_checklist: "",
     idproses: "",
@@ -105,6 +105,8 @@ export function FormScan({ onAdd }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    onLoadingChange(true);
+
     if (!formData.kode_checklist || !formData.idproses || !formData.nik) {
       setAlert({
         show: true,
@@ -132,7 +134,7 @@ export function FormScan({ onAdd }) {
         1,
         "ADD"
       );
-
+      onLoadingChange(false);
       resetForm();
       fetchMasterData();
     } catch (error) {

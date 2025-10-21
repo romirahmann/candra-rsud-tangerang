@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { useEffect, useState } from "react";
 import { Topbar } from "./Topbar";
 import { useAuth } from "../store/AuthContext";
+import { LoadingScreen } from "../shared/LoadingScreen";
 
 export function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -22,45 +23,28 @@ export function MainLayout() {
 
   return (
     <>
-      <div className="flex h-screen ">
-        <Sidebar
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-          userLogin={userLogin}
-        />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <Topbar
+      {userLogin ? (
+        <div className="flex h-screen ">
+          <Sidebar
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
             userLogin={userLogin}
-            isUserPopupOpen={isUserPopupOpen}
-            setIsUserPopupOpen={setIsUserPopupOpen}
-            onLogout={handleLogout}
           />
-          <main className="flex-1 overflow-x-hidden">
-            <Outlet />
-          </main>
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <Topbar
+              userLogin={userLogin}
+              isUserPopupOpen={isUserPopupOpen}
+              setIsUserPopupOpen={setIsUserPopupOpen}
+              onLogout={handleLogout}
+            />
+            <main className="flex-1 overflow-x-hidden">
+              <Outlet />
+            </main>
+          </div>
         </div>
-      </div>
+      ) : (
+        <LoadingScreen />
+      )}
     </>
   );
-
-  //     <div className="flex h-screen overflow-hidden">
-  //   <Sidebar
-  //     isSidebarOpen={isSidebarOpen}
-  //     setIsSidebarOpen={setIsSidebarOpen}
-  //     userLogin={userLogin}
-  //   />
-
-  //   {/* Main Content */}
-  //   <div className=" flex-col flex-1">
-  //     <Topbar
-  //       userLogin={userLogin}
-  //       isUserPopupOpen={isUserPopupOpen}
-  //       setIsUserPopupOpen={setIsUserPopupOpen}
-  //       onLogout={handleLogout}
-  //     />
-  //   </div>
-  //   <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-  //     <Outlet />
-  //   </div>
-  // </div>
 }
