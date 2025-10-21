@@ -1,4 +1,7 @@
-const moment = require("moment");
+// ==========================
+// Refactor tanpa moment.js
+// ==========================
+
 const { getDB } = require("../database/db.config");
 
 /* =========================
@@ -8,24 +11,51 @@ const { getDB } = require("../database/db.config");
 const escapeString = (str) =>
   str === null || str === undefined ? "" : String(str).replace(/'/g, "''");
 
+// format #MM/DD/YYYY# untuk Access
 const toAccessDate = (dateLike) => {
   if (!dateLike) return "NULL";
-  const m = moment(
-    dateLike,
-    ["YYYY-MM-DD", "MM/DD/YYYY", moment.ISO_8601],
-    true
-  );
-  if (!m.isValid()) return "NULL";
-  return `#${m.format("MM/DD/YYYY")}#`;
+  try {
+    const d = new Date(dateLike);
+    if (isNaN(d)) return "NULL";
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `#${mm}/${dd}/${yyyy}#`;
+  } catch {
+    return "NULL";
+  }
 };
 
+// format #HH:mm:ss# untuk Access
 const toAccessTime = (timeLike) => {
   if (!timeLike) return "NULL";
-  // terima "HH:mm:ss" atau Date/ISO
-  const m = moment(timeLike, ["HH:mm:ss", moment.ISO_8601], true);
-  if (!m.isValid()) return "NULL";
-  // literal time di Access pakai #HH:mm:ss#
-  return `#${m.format("HH:mm:ss")}#`;
+  try {
+    const d = new Date(
+      `1970-01-01T${timeLike.length === 8 ? timeLike : "00:00:00"}`
+    );
+    if (isNaN(d)) return "NULL";
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const ss = String(d.getSeconds()).padStart(2, "0");
+    return `#${hh}:${mm}:${ss}#`;
+  } catch {
+    return "NULL";
+  }
+};
+
+// ubah string time jadi 'HH:mm:ss'
+const formatTime = (timeLike) => {
+  if (!timeLike) return null;
+  try {
+    const d = new Date(timeLike);
+    if (isNaN(d)) return null;
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const ss = String(d.getSeconds()).padStart(2, "0");
+    return `${hh}:${mm}:${ss}`;
+  } catch {
+    return null;
+  }
 };
 
 const toInt = (val, def = 0) => {
@@ -37,10 +67,9 @@ const toInt = (val, def = 0) => {
  * Queries
  * ========================= */
 
-const getAllCandra = async (q) => {
+const getAllCandra = async () => {
   const db = getDB();
-
-  let query = `
+  const query = `
     SELECT 
       id,
       kode_checklist, 
@@ -54,15 +83,12 @@ const getAllCandra = async (q) => {
       selesai
     FROM tblcandra
   `;
-
   const rows = await db.query(query);
 
   return rows.map((row) => ({
     ...row,
-    mulai_formatted: row.mulai ? moment(row.mulai).format("HH:mm:ss") : null,
-    selesai_formatted: row.selesai
-      ? moment(row.selesai).format("HH:mm:ss")
-      : null,
+    mulai_formatted: formatTime(row.mulai),
+    selesai_formatted: formatTime(row.selesai),
   }));
 };
 
@@ -89,10 +115,8 @@ const getCandraByChecklist = async (Kode_Checklist) => {
   const rows = await db.query(query);
   return rows.map((row) => ({
     ...row,
-    mulai_formatted: row.mulai ? moment(row.mulai).format("HH:mm:ss") : null,
-    selesai_formatted: row.selesai
-      ? moment(row.selesai).format("HH:mm:ss")
-      : null,
+    mulai_formatted: formatTime(row.mulai),
+    selesai_formatted: formatTime(row.selesai),
   }));
 };
 
@@ -110,7 +134,11 @@ const dataExisting = async (kode_checklist, idproses) => {
 
 const getAllByDateNow = async () => {
   const db = getDB();
-  const today = moment().format("MM/DD/YYYY");
+  const today = new Date();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const yyyy = today.getFullYear();
+  const formattedToday = `${mm}/${dd}/${yyyy}`;
 
   const query = `
     SELECT 
@@ -127,7 +155,7 @@ const getAllByDateNow = async () => {
       submittedby,
       editby
     FROM tblcandra
-    WHERE tanggal = #${today}#
+    WHERE tanggal = #${formattedToday}#
     ORDER BY 
       IIF(selesai IS NULL OR selesai = #00:00:00#, 0, 1),
       mulai DESC
@@ -136,10 +164,8 @@ const getAllByDateNow = async () => {
   const rows = await db.query(query);
   return rows.map((row) => ({
     ...row,
-    mulai_formatted: row.mulai ? moment(row.mulai).format("HH:mm:ss") : null,
-    selesai_formatted: row.selesai
-      ? moment(row.selesai).format("HH:mm:ss")
-      : null,
+    mulai_formatted: formatTime(row.mulai),
+    selesai_formatted: formatTime(row.selesai),
   }));
 };
 
@@ -156,7 +182,6 @@ const getCandraByKeys = async (kode_checklist, idproses) => {
 };
 
 const getAllKeys = async () => {
-  // Dipakai controller-mu buat dedup insert
   const db = getDB();
   const query = `SELECT kode_checklist, idproses FROM tblcandra`;
   return await db.query(query);
@@ -171,9 +196,9 @@ const createCandra = async (data) => {
     qty_image,
     nama_proses,
     nama_karyawan,
-    tanggal, // ekspektasi 'YYYY-MM-DD' atau Date
-    mulai_formatted, // 'HH:mm:ss' (opsional)
-    selesai_formatted, // 'HH:mm:ss' (opsional)
+    tanggal,
+    mulai_formatted,
+    selesai_formatted,
     submittedby,
   } = data;
 
@@ -206,9 +231,9 @@ const createCandraFromScan = async (data) => {
     qty_image,
     nama_proses,
     nama_karyawan,
-    tanggal, // bisa 'YYYY-MM-DD' atau 'MM/DD/YYYY'
-    mulai, // 'HH:mm:ss'
-    selesai, // 'HH:mm:ss'
+    tanggal,
+    mulai,
+    selesai,
     submittedby,
   } = data;
 
@@ -229,9 +254,8 @@ const createCandraFromScan = async (data) => {
       '${escapeString(submittedby)}'
     )
   `;
-
   const result = await db.query(q);
-  return result.count; // jumlah rows inserted
+  return result.count;
 };
 
 const updateCandra = async (kode_checklist, idproses, data) => {
@@ -241,9 +265,9 @@ const updateCandra = async (kode_checklist, idproses, data) => {
     nama_proses,
     nama_karyawan,
     qty_image,
-    tanggal, // 'YYYY-MM-DD' / 'MM/DD/YYYY' / null
-    mulai, // 'HH:mm:ss' / null
-    selesai, // 'HH:mm:ss' / null
+    tanggal,
+    mulai,
+    selesai,
     editby,
   } = data;
 
@@ -260,15 +284,13 @@ const updateCandra = async (kode_checklist, idproses, data) => {
     WHERE kode_checklist = '${escapeString(kode_checklist)}'
       AND idproses = '${escapeString(idproses)}'
   `;
-
   const result = await db.query(q);
-  return result.count; // rows updated
+  return result.count;
 };
 
 const finishedProses = async (kode_checklist, idproses, data) => {
   const db = getDB();
-  const { selesai_formatted } = data; // 'HH:mm:ss'
-
+  const { selesai_formatted } = data;
   const q = `
     UPDATE tblcandra
     SET selesai = ${toAccessTime(selesai_formatted)}
@@ -282,7 +304,6 @@ const finishedProses = async (kode_checklist, idproses, data) => {
 const finishedProsesScan = async (kode_checklist, idproses, data) => {
   const db = getDB();
   const { selesai_formatted, qty_image } = data;
-
   const q = `
     UPDATE tblcandra
     SET selesai = ${toAccessTime(selesai_formatted)},
@@ -298,7 +319,6 @@ const updateCandraByMR = async (data) => {
   const db = getDB();
   let { Kode_Checklist, totalPages } = data;
   const qty = toInt(totalPages, 0);
-
   const q = `
     UPDATE tblcandra
     SET qty_image = ${qty}
@@ -311,9 +331,7 @@ const updateCandraByMR = async (data) => {
 const deleteCandra = async (id) => {
   const db = getDB();
   const numId = toInt(id, null);
-  if (numId === null) {
-    throw new Error("Invalid id untuk deleteCandra");
-  }
+  if (numId === null) throw new Error("Invalid id untuk deleteCandra");
   const q = `DELETE FROM tblcandra WHERE id = ${numId}`;
   const result = await db.query(q);
   return result.count;
@@ -321,15 +339,17 @@ const deleteCandra = async (id) => {
 
 const getCandraByDate1001 = async (date) => {
   const db = getDB();
-  const m = moment(date, ["YYYY-MM-DD", "MM/DD/YYYY"], true);
-  if (!m.isValid())
-    throw new Error("Tanggal tidak valid (getCandraByDate1001)");
+  const d = new Date(date);
+  if (isNaN(d)) throw new Error("Tanggal tidak valid (getCandraByDate1001)");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yyyy = d.getFullYear();
 
   const q = `
     SELECT kode_checklist
     FROM tblcandra
     WHERE idproses = '1001'
-      AND tanggal < #${m.format("MM/DD/YYYY")}#
+      AND tanggal < #${mm}/${dd}/${yyyy}#
   `;
   return await db.query(q);
 };
@@ -354,9 +374,7 @@ const getCandraFilterByKode = async (kodeList = []) => {
   const rows = await db.query(q);
   return rows.map((row) => ({
     ...row,
-    selesai_formatted: row.selesai
-      ? moment(row.selesai).format("HH:mm:ss")
-      : null,
+    selesai_formatted: formatTime(row.selesai),
   }));
 };
 
@@ -369,7 +387,7 @@ module.exports = {
   dataExisting,
   getAllByDateNow,
   getCandraByKeys,
-  getAllKeys, // <— penting: dipakai controller
+  getAllKeys,
   createCandra,
   createCandraFromScan,
   updateCandra,

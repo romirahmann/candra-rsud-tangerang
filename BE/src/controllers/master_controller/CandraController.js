@@ -4,10 +4,21 @@ const api = require("../../tools/common");
 const { Parser } = require("json2csv");
 const fs = require("fs");
 const path = require("path");
-const moment = require("moment");
+// const moment = require("moment"); // ❌ HAPUS moment
 const logService = require("../../services/log.service");
 const ExcelJS = require("exceljs");
 const { getIO } = require("../../services/socket.service");
+
+// 🔹 Helper date native function
+function formatTime(date = new Date()) {
+  return date.toLocaleTimeString("en-GB", { hour12: false }); // "HH:mm:ss"
+}
+
+function subtractDays(days) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().split("T")[0]; // "YYYY-MM-DD"
+}
 
 const getAllCandra = async (req, res) => {
   try {
@@ -18,6 +29,7 @@ const getAllCandra = async (req, res) => {
     return api.error(res, "Failed to get Candra", 500);
   }
 };
+
 const getFilterCandra = async (req, res) => {
   let { query } = req.params;
 
@@ -29,6 +41,7 @@ const getFilterCandra = async (req, res) => {
     return api.error(res, "Failed to get Candra", 500);
   }
 };
+
 const getAllCandraDayNow = async (req, res) => {
   try {
     const data = await model.getAllByDateNow();
@@ -42,7 +55,6 @@ const getAllCandraDayNow = async (req, res) => {
 const getCandraByKeys = async (req, res) => {
   let { kode_checklist, idproses } = req.params;
 
-  // Hindari SQL Injection
   kode_checklist = kode_checklist.replace(/'/g, "''");
   idproses = idproses.replace(/'/g, "''");
 
@@ -89,10 +101,8 @@ const createCandra = async (req, res) => {
 
   try {
     const inserted = await model.createCandra(req.body);
-
     return api.ok(res, { inserted }, "Candra created successfully");
   } catch (error) {
-    // logService.log("Created Data Candra!", "Failed");
     console.error("❌ Error creating Candra:", error);
     return api.error(res, "Failed to create Candra", 500);
   }
@@ -102,7 +112,6 @@ const addScanCandra = async (req, res) => {
   const data = req.body;
 
   try {
-    // Cek apakah proses ini sudah ada di tblcandra
     const existingCandra = await model.dataExisting(
       data.kode_checklist,
       data.idproses
@@ -118,28 +127,21 @@ const addScanCandra = async (req, res) => {
 
     if (data.idproses === "1009") {
       await model.createCandraFromScan(data);
-
       const io = getIO();
-
       io.emit("scan_created", { message: "SCAN NEW CREATED!" });
-
       return api.ok(res, "Candra created successfully");
     }
 
-    // Ambil informasi urutan dari tblproses berdasarkan idproses
     const dataProses = await modelProses.getProsesById(data.idproses);
     const urutanProses = parseInt(dataProses.urutan, 10);
 
-    // Jika proses ini urutan pertama, langsung tambahkan
     if (urutanProses === 1) {
       await model.createCandraFromScan(data);
       const io = getIO();
-
       io.emit("scan_created", { message: "SCAN NEW CREATED!" });
       return api.ok(res, "Candra created successfully");
     }
 
-    // Ambil semua proses dengan urutan sebelumnya
     const prosesSebelumnya = await modelProses.getProsesByUrutan(
       urutanProses - 1
     );
@@ -152,32 +154,29 @@ const addScanCandra = async (req, res) => {
       );
     }
 
-    // Ambil semua data checklist yang berhubungan dengan proses sebelumnya
     const existingPreviousPromises = prosesSebelumnya.map((proses) =>
       model.getCandraByKeys(data.kode_checklist, proses.idproses)
     );
     const finishedPreviousList = await Promise.all(existingPreviousPromises);
 
-    // Cek apakah semua proses sebelumnya sudah selesai
+    // ✅ Ganti moment dengan native check
     const prosesBelumSelesai = finishedPreviousList.some((finishedPrevious) => {
-      if (!finishedPrevious) return true; // Jika proses sebelumnya tidak ditemukan
-      return moment(finishedPrevious.selesai).format("HH:mm:ss") === "00:00:00";
+      if (!finishedPrevious) return true;
+      return (
+        !finishedPrevious.selesai || finishedPrevious.selesai === "00:00:00"
+      );
     });
 
     if (prosesBelumSelesai) {
       return api.error(res, "Selesaikan proses sebelumnya!", 400);
     }
 
-    // Semua proses sebelumnya sudah selesai, tambahkan proses baru
     await model.createCandraFromScan(data);
-
     const io = getIO();
-
     io.emit("scan_created", { message: "SCAN NEW CREATED!" });
 
     return api.ok(res, "Candra created successfully");
   } catch (error) {
-    // logService.log("Add proses scan", "FAILED");
     console.error("❌ Error creating Candra:", error);
     return api.error(res, "Failed to create Candra", 500);
   }
@@ -196,14 +195,13 @@ const updateCandra = async (req, res) => {
   try {
     const updated = await model.updateCandra(kode_checklist, idproses, data);
     if (!updated) return api.error(res, "Candra not found or no changes", 404);
-
     return api.ok(res, "Candra updated successfully");
   } catch (error) {
-    // logService.log("Created Data Candra!", "FAILED");
     console.error("❌ Error updating Candra:", error);
     return api.error(res, "Failed to update Candra", 500);
   }
 };
+
 const finishedProses = async (req, res) => {
   let { kode_checklist, idproses } = req.params;
   const data = req.body;
@@ -216,7 +214,6 @@ const finishedProses = async (req, res) => {
 
   try {
     const updated = await model.finishedProses(kode_checklist, idproses, data);
-
     if (!updated) return api.error(res, "Candra not found or no changes", 404);
 
     const io = getIO();
@@ -226,10 +223,6 @@ const finishedProses = async (req, res) => {
 
     return api.ok(res, "Candra updated successfully");
   } catch (error) {
-    // logService.log(
-    //   `Proses dengan Kode Checklist: ${kode_checklist} dan ID Proses: ${idproses}`,
-    //   "Failed"
-    // );
     console.error("❌ Error updating Candra:", error);
     return api.error(res, "Failed to update Candra", 500);
   }
@@ -246,8 +239,9 @@ const finishedProsesScan = async (req, res) => {
     return api.error(res, "kode_checklist and idproses are required", 400);
 
   if (data.qty_image === 0) return api.error(res, "Qty Image can't 0", 400);
-  // Menambahkan properti jam
-  data.selesai_formatted = moment().format("HH:mm:ss"); // Format timestamp
+
+  // ✅ Ganti moment dengan native Date
+  data.selesai_formatted = formatTime();
 
   try {
     const updated = await model.finishedProsesScan(
@@ -268,7 +262,6 @@ const deleteCandra = async (req, res) => {
   try {
     const deleted = await model.deleteCandra(id);
     if (!deleted) return api.error(res, "Candra not found", 404);
-
     return api.ok(res, { deleted }, "Candra deleted successfully");
   } catch (error) {
     console.error("❌ Error deleting Candra:", error);
@@ -279,11 +272,9 @@ const deleteCandra = async (req, res) => {
 const exportCsv = async (req, res) => {
   const data = req.body;
   try {
-    // **Buat Workbook dan Worksheet**
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data Candra");
 
-    // **Definisikan Header dan Tambahkan ke Worksheet**
     const headers = [
       "Kode Checklist",
       "ID Proses",
@@ -298,7 +289,6 @@ const exportCsv = async (req, res) => {
     ];
     worksheet.addRow(headers);
 
-    // **Tambahkan Data**
     data.forEach((row) => {
       worksheet.addRow([
         row.kode_checklist,
@@ -314,26 +304,19 @@ const exportCsv = async (req, res) => {
       ]);
     });
 
-    // **Format Header agar Tebal**
     worksheet.getRow(1).eachCell((cell) => {
       cell.font = { bold: true };
       cell.alignment = { horizontal: "center" };
     });
 
-    // **Buat Path File Excel**
     const filePath = path.join(__dirname, "../../exports/candra_export.xlsx");
-
-    // **Simpan File**
     await workbook.xlsx.writeFile(filePath);
 
-    // **Kirim File Excel ke Client**
     res.download(filePath, "data_candra.xlsx", (err) => {
       if (err) {
         console.error("Error saat mengirim file:", err);
         res.status(500).json({ message: "Gagal mengunduh file" });
       }
-
-      // **Hapus File Setelah Dikirim (Opsional)**
       fs.unlinkSync(filePath);
     });
   } catch (error) {
@@ -341,36 +324,30 @@ const exportCsv = async (req, res) => {
     return api.error(res, "Failed to export Excel", 500);
   }
 };
-// Cache untuk proses data supaya tidak query setiap request
+
+// Cache map tetap sama
 let prosesMapCache = null;
+
 const validate1007 = async (req, res) => {
   try {
-    // 1. Hitung tanggal 6 hari lalu
-    const sixDaysAgo = moment().subtract(6, "days").format("YYYY-MM-DD");
+    // ✅ Ganti moment dengan native Date
+    const sixDaysAgo = subtractDays(6);
 
-    // 2. Ambil data candra berdasarkan tanggal
-    // Ambil hanya kolom yang dibutuhkan untuk performa
     const dataCandra = await model.getCandraByDate1001(sixDaysAgo);
 
     if (!dataCandra || dataCandra.length === 0) {
       return api.ok(res, []);
     }
 
-    // 3. Ambil kode checklist unik
     const kodeChecklistList = dataCandra.map((item) => item.kode_checklist);
-
-    // 4. Ambil data proses per kode checklist
-    // Ambil hanya kolom kode_checklist, idproses, selesai
     const data = await model.getCandraFilterByKode(kodeChecklistList);
 
-    // 5. Buat lookup map per kode_checklist supaya tidak filter nested loop
     const dataMap = {};
     data.forEach((item) => {
       if (!dataMap[item.kode_checklist]) dataMap[item.kode_checklist] = [];
       dataMap[item.kode_checklist].push(item);
     });
 
-    // 6. Ambil data proses (cache jika sudah ada)
     if (!prosesMapCache) {
       const prosesData = await modelProses.getAllProses();
       prosesMapCache = {};
@@ -379,22 +356,17 @@ const validate1007 = async (req, res) => {
       });
     }
 
-    // 7. Target proses yang ingin dicek
     const targetProses = ["1004", "1005", "1006", "1007"];
-
-    // 8. Proses data
     const hasil = [];
 
     kodeChecklistList.forEach((kode) => {
       const prosesPerChecklist = dataMap[kode] || [];
-
       const prosesBermasalah = targetProses
         .map((id) => {
           const item = prosesPerChecklist.find(
             (p) => String(p.idproses).trim() === String(id).trim()
           );
           const selesai = item?.selesai?.trim();
-
           if (!item || !selesai || selesai === "00:00:00") {
             return {
               idproses: id,

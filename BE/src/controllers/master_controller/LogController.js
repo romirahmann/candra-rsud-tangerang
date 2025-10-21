@@ -42,7 +42,6 @@ const viewLogEntry = async (req, res) => {
     const filePath = "\\\\192.168.9.251\\padaprima\\T2 Data Enty\\log.txt";
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath, "utf8");
-      console.log(data);
       return api.ok(res, data);
     } else {
       console.error("⚠️ File tidak ditemukan di:", filePath);
