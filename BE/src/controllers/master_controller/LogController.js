@@ -1,7 +1,20 @@
-const moment = require("moment");
-const LogModel = require("../../models/log.model");
-const api = require("../../tools/common");
 const fs = require("fs");
+const path = require("path");
+const api = require("../../tools/common");
+
+// Ubah ke native date
+const getCurrentDateTime = () => {
+  const now = new Date();
+  const pad = (n) => (n < 10 ? "0" + n : n);
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
+    now.getDate()
+  )} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+};
+
+const LogModel = require("../../models/log.model");
+
+// Path file log
+const logFilePath = path.join(__dirname, "../../exports/candra.log");
 
 const getAllLog = async (req, res) => {
   const { query } = req.params;
@@ -25,15 +38,27 @@ const getByStatus = async (req, res) => {
   }
 };
 
+// ⬇️ ADD LOG ke file
 const addLog = async (req, res) => {
-  let newData = req.body;
+  const newData = req.body;
+
   try {
-    newData.createAt = moment().format("YYYY-MM-DD HH:mm:ss");
-    await LogModel.create(newData);
-    return api.ok(res, "Log added successfully");
+    // Format log line
+    const logLine = `[${getCurrentDateTime()}] ${JSON.stringify(newData)}\n`;
+
+    // Pastikan folder export ada
+    const dirPath = path.dirname(logFilePath);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    // Tulis ke file
+    fs.appendFileSync(logFilePath, logLine, "utf8");
+
+    return api.ok(res, "Log saved to file successfully");
   } catch (error) {
-    console.log(error);
-    return api.error(res, "Log added failed", 500);
+    console.error("❌ Error writing log:", error);
+    return api.error(res, "Failed to write log file", 500);
   }
 };
 

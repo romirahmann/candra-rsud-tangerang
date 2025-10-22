@@ -19,6 +19,12 @@ const getProsesById = async (idproses) => {
   const result = await db.query(query);
   return result[0];
 };
+const getUrutanProsesById = async (idproses) => {
+  const db = getDB();
+  const query = `SELECT urutan FROM tblproses WHERE idproses = '${idproses}'`;
+  const result = await db.query(query);
+  return result[0];
+};
 
 const getProsesByUrutan = async (urutan) => {
   const db = getDB();
@@ -71,4 +77,5 @@ module.exports = {
   updateProses,
   deleteProses,
   getProsesByUrutan,
+  getUrutanProsesById,
 };

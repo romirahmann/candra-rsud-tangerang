@@ -125,14 +125,7 @@ const addScanCandra = async (req, res) => {
       );
     }
 
-    if (data.idproses === "1009") {
-      await model.createCandraFromScan(data);
-      const io = getIO();
-      io.emit("scan_created", { message: "SCAN NEW CREATED!" });
-      return api.ok(res, "Candra created successfully");
-    }
-
-    const dataProses = await modelProses.getProsesById(data.idproses);
+    const dataProses = await modelProses.getUrutanProsesById(data.idproses);
     const urutanProses = parseInt(dataProses.urutan, 10);
 
     if (urutanProses === 1) {
@@ -141,6 +134,7 @@ const addScanCandra = async (req, res) => {
       io.emit("scan_created", { message: "SCAN NEW CREATED!" });
       return api.ok(res, "Candra created successfully");
     }
+    console.log(urutanProses);
 
     const prosesSebelumnya = await modelProses.getProsesByUrutan(
       urutanProses - 1
@@ -203,22 +197,29 @@ const updateCandra = async (req, res) => {
 };
 
 const finishedProses = async (req, res) => {
-  let { kode_checklist, idproses } = req.params;
-  const data = req.body;
-
-  kode_checklist = kode_checklist.replace(/'/g, "''");
-  idproses = idproses.replace(/'/g, "''");
-
-  if (!kode_checklist || !idproses)
-    return api.error(res, "kode_checklist and idproses are required", 400);
-
   try {
-    const updated = await model.finishedProses(kode_checklist, idproses, data);
-    if (!updated) return api.error(res, "Candra not found or no changes", 404);
+    const { kode_checklist, idproses } = req.params;
+    const { selesai_formatted } = req.body;
 
-    const io = getIO();
-    io.emit("finished_process", {
-      message: `Checklist ${kode_checklist} dengan proses ${idproses} selesai!`,
+    if (!kode_checklist || !idproses || !selesai_formatted)
+      return api.error(
+        res,
+        "kode_checklist, idproses, dan waktu selesai wajib diisi",
+        400
+      );
+
+    // langsung update tanpa pre-check redundant
+    const updated = await model.finishedProses(
+      kode_checklist,
+      idproses,
+      selesai_formatted
+    );
+
+    if (updated === 0)
+      return api.error(res, "Data tidak ditemukan atau tidak berubah", 404);
+
+    getIO().emit("finished_process", {
+      message: `Checklist ${kode_checklist} proses ${idproses} selesai!`,
     });
 
     return api.ok(res, "Candra updated successfully");
@@ -227,32 +228,36 @@ const finishedProses = async (req, res) => {
     return api.error(res, "Failed to update Candra", 500);
   }
 };
-
+// ✅ Controller — versi cepat dan clean
 const finishedProsesScan = async (req, res) => {
-  let { kode_checklist, idproses } = req.params;
-  const data = req.body;
-
-  kode_checklist = kode_checklist.replace(/'/g, "''");
-  idproses = idproses.replace(/'/g, "''");
-
-  if (!kode_checklist || !idproses)
-    return api.error(res, "kode_checklist and idproses are required", 400);
-
-  if (data.qty_image === 0) return api.error(res, "Qty Image can't 0", 400);
-
-  // ✅ Ganti moment dengan native Date
-  data.selesai_formatted = formatTime();
-
   try {
+    const { kode_checklist, idproses } = req.params;
+    const { qty_image } = req.body;
+
+    if (!kode_checklist || !idproses)
+      return api.error(res, "kode_checklist dan idproses wajib diisi", 400);
+
+    if (!qty_image || qty_image <= 0)
+      return api.error(res, "Qty Image tidak boleh 0", 400);
+
+    // native date formatter — langsung di sini
+    const selesai_formatted = formatTime();
+
+    // langsung panggil model tanpa ubah string manual
     const updated = await model.finishedProsesScan(
       kode_checklist,
       idproses,
-      data
+      selesai_formatted,
+      qty_image
     );
-    if (!updated) return api.error(res, "Candra not found or no changes", 404);
-    return api.ok(res, "Proses Scan selesai");
+
+    if (updated === 0)
+      return api.error(res, "Candra tidak ditemukan atau tidak berubah", 404);
+
+    return api.ok(res, "Proses scan selesai");
   } catch (error) {
-    return api.error(res, "Failed to update proses scan", 500);
+    console.error("❌ Error finishedProsesScan:", error);
+    return api.error(res, "Gagal menyelesaikan proses scan", 500);
   }
 };
 

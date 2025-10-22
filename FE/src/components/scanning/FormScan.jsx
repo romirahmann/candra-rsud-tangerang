@@ -158,11 +158,10 @@ export function FormScan({ onAdd, onLoadingChange }) {
 
       setAlert({
         show: true,
-        message:
-          error?.response?.data?.data?.message ||
-          "Gagal menambahkan data scan.",
+        message: "Gagal menambahkan data scan.",
         type: "error",
       });
+      onLoadingChange(false);
     }
   };
 

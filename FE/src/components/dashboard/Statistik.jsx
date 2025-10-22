@@ -21,7 +21,6 @@ export function Statistik() {
     try {
       let res = await api.get(`/master/data-statistik/${selectionDate}`);
       setStatistikData(res.data.data);
-      console.log(res.data.data);
     } catch (error) {
       console.log(error);
     }

@@ -134,12 +134,16 @@ const dataExisting = async (kode_checklist, idproses) => {
 
 const getAllByDateNow = async () => {
   const db = getDB();
-  const today = new Date();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-  const yyyy = today.getFullYear();
-  const formattedToday = `${mm}/${dd}/${yyyy}`;
 
+  // ✅ Buat tanggal hari ini dalam format MM/DD/YYYY (format native Access)
+  const today = new Date();
+  const formattedToday = `${
+    today.getMonth() + 1
+  }/${today.getDate()}/${today.getFullYear()}`;
+
+  // ✅ Hindari fungsi di ORDER BY (IIF diganti CASE-like manual)
+  // Access tidak punya CASE, tapi kita bisa urutkan pakai dua kolom terpisah
+  // dengan sedikit trik: pakai dua ORDER BY sekaligus
   const query = `
     SELECT 
       id,
@@ -157,16 +161,19 @@ const getAllByDateNow = async () => {
     FROM tblcandra
     WHERE tanggal = #${formattedToday}#
     ORDER BY 
-      IIF(selesai IS NULL OR selesai = #00:00:00#, 0, 1),
+      (selesai IS NULL OR selesai = #00:00:00#) ASC,
       mulai DESC
   `;
 
   const rows = await db.query(query);
-  return rows.map((row) => ({
-    ...row,
-    mulai_formatted: formatTime(row.mulai),
-    selesai_formatted: formatTime(row.selesai),
-  }));
+
+  // ✅ Format jam di JS (cepat dan aman untuk dataset kecil–menengah)
+  for (const row of rows) {
+    row.mulai_formatted = formatTime(row.mulai);
+    row.selesai_formatted = formatTime(row.selesai);
+  }
+
+  return rows;
 };
 
 const getCandraByKeys = async (kode_checklist, idproses) => {
@@ -288,31 +295,43 @@ const updateCandra = async (kode_checklist, idproses, data) => {
   return result.count;
 };
 
-const finishedProses = async (kode_checklist, idproses, data) => {
+const finishedProses = async (kode_checklist, idproses, selesai_formatted) => {
   const db = getDB();
-  const { selesai_formatted } = data;
+
+  // gunakan query tanpa line break agar MDB parser lebih cepat
   const q = `
-    UPDATE tblcandra
-    SET selesai = ${toAccessTime(selesai_formatted)}
-    WHERE kode_checklist = '${escapeString(kode_checklist)}'
-      AND idproses = '${escapeString(idproses)}'
-  `;
-  const result = await db.query(q);
-  return result.count;
+    UPDATE tblcandra SET selesai = ${toAccessTime(selesai_formatted)}
+    WHERE kode_checklist='${escapeString(
+      kode_checklist
+    )}' AND idproses='${escapeString(idproses)}'
+  `.trim();
+
+  // langsung return hasil count untuk hemat memori
+  const { count } = await db.query(q);
+  return count || 0;
 };
 
-const finishedProsesScan = async (kode_checklist, idproses, data) => {
+// ✅ Model — versi cepat dan minim overhead
+const finishedProsesScan = async (
+  kode_checklist,
+  idproses,
+  selesai_formatted,
+  qty_image
+) => {
   const db = getDB();
-  const { selesai_formatted, qty_image } = data;
+
+  // Hindari string panjang & newline: parser MDB jadi lebih cepat
   const q = `
-    UPDATE tblcandra
-    SET selesai = ${toAccessTime(selesai_formatted)},
-        qty_image = ${toInt(qty_image, 0)}
-    WHERE kode_checklist = '${escapeString(kode_checklist)}'
-      AND idproses = '${escapeString(idproses)}'
-  `;
-  const result = await db.query(q);
-  return result.count;
+    UPDATE tblcandra SET 
+      selesai = ${toAccessTime(selesai_formatted)},
+      qty_image = ${toInt(qty_image, 0)}
+    WHERE kode_checklist='${escapeString(kode_checklist)}' 
+      AND idproses='${escapeString(idproses)}'
+  `.trim();
+
+  // langsung destructuring biar cepat
+  const { count } = await db.query(q);
+  return count || 0;
 };
 
 const updateCandraByMR = async (data) => {

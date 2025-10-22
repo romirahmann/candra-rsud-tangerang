@@ -1,0 +1,19 @@
+[2025-10-22 10:43:28] {"username":"romirahman","description":"Login to Candra ","status":1,"action":"LOGIN"}
+[2025-10-22 10:47:30] {"username":"romirahman","description":"Menyelesaikan proses dengan ID 1002","status":1,"action":"SCAN SELESAI"}
+[2025-10-22 10:51:57] {"username":"romirahman","description":"Delete Data Candra","status":1,"action":"DELETE"}
+[2025-10-22 11:03:43] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":1,"action":"ADD"}
+[2025-10-22 11:03:58] {"username":"romirahman","description":"Delete Data Candra","status":1,"action":"DELETE"}
+[2025-10-22 11:06:56] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":1,"action":"ADD"}
+[2025-10-22 11:06:57] {"username":"romirahman","description":"Menyelesaikan proses dengan ID 1002","status":1,"action":"SCAN SELESAI"}
+[2025-10-22 11:07:16] {"username":"romirahman","description":"Delete Data Candra","status":1,"action":"DELETE"}
+[2025-10-22 11:09:35] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":1,"action":"ADD"}
+[2025-10-22 11:09:41] {"username":"romirahman","description":"Menyelesaikan proses dengan ID 1002","status":1,"action":"SCAN SELESAI"}
+[2025-10-22 11:09:49] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":0,"action":"ADD"}
+[2025-10-22 11:11:55] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":0,"action":"ADD"}
+[2025-10-22 11:12:20] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":0,"action":"ADD"}
+[2025-10-22 11:13:21] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":0,"action":"ADD"}
+[2025-10-22 11:14:58] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":0,"action":"ADD"}
+[2025-10-22 11:15:46] {"username":"romirahman","description":" Menambahkan Data Proses 1008!","status":1,"action":"EDIT"}
+[2025-10-22 11:15:57] {"username":"romirahman","description":"Menambahkan Proses Scan Kode Checklist 251022-0001!","status":1,"action":"ADD"}
+[2025-10-22 11:16:13] {"username":"romirahman","description":"Delete Data Candra","status":1,"action":"DELETE"}
+[2025-10-22 11:16:19] {"username":"romirahman","description":"Delete Data Candra","status":1,"action":"DELETE"}
