@@ -1,7 +1,7 @@
 const { getDB } = require("../database/db.config");
 
 const login = async (username) => {
-  const db = getDB();
+  const db = await getDB();
   const safeUsername = username.replace(/'/g, "''");
 
   const query = `SELECT id, username, password, jabatan FROM Users WHERE username = '${safeUsername}'`;

@@ -4,8 +4,7 @@ const api = require("../../tools/common");
 const { Parser } = require("json2csv");
 const fs = require("fs");
 const path = require("path");
-// const moment = require("moment"); // ❌ HAPUS moment
-const logService = require("../../services/log.service");
+
 const ExcelJS = require("exceljs");
 const { getIO } = require("../../services/socket.service");
 
@@ -17,7 +16,7 @@ function formatTime(date = new Date()) {
 function subtractDays(days) {
   const d = new Date();
   d.setDate(d.getDate() - days);
-  return d.toISOString().split("T")[0]; // "YYYY-MM-DD"
+  return d.toISOString().split("T")[0];
 }
 
 const getAllCandra = async (req, res) => {
@@ -335,65 +334,69 @@ let prosesMapCache = null;
 
 const validate1007 = async (req, res) => {
   try {
-    // ✅ Ganti moment dengan native Date
+    // ✅ Pakai native date helper, langsung dari util kecil
     const sixDaysAgo = subtractDays(6);
 
+    // 1️⃣ Ambil semua checklist yang sudah lebih dari 6 hari
     const dataCandra = await model.getCandraByDate1001(sixDaysAgo);
+    if (!dataCandra?.length) return api.ok(res, []);
 
-    if (!dataCandra || dataCandra.length === 0) {
-      return api.ok(res, []);
+    // 2️⃣ Kumpulkan kode checklist sekali saja
+    const kodeChecklistList = dataCandra.map((r) => r.kode_checklist);
+
+    // 3️⃣ Ambil semua proses dari kode checklist yang ditemukan
+    const data = await model.getCandraFilterByKode(kodeChecklistList);
+    if (!data?.length) return api.ok(res, []);
+
+    // 4️⃣ Buat map dari kode_checklist ke daftar prosesnya
+    const dataMap = Object.create(null);
+    for (const item of data) {
+      const kode = item.kode_checklist;
+      if (!dataMap[kode]) dataMap[kode] = [];
+      dataMap[kode].push(item);
     }
 
-    const kodeChecklistList = dataCandra.map((item) => item.kode_checklist);
-    const data = await model.getCandraFilterByKode(kodeChecklistList);
-
-    const dataMap = {};
-    data.forEach((item) => {
-      if (!dataMap[item.kode_checklist]) dataMap[item.kode_checklist] = [];
-      dataMap[item.kode_checklist].push(item);
-    });
-
+    // 5️⃣ Cache nama proses biar nggak query terus
     if (!prosesMapCache) {
       const prosesData = await modelProses.getAllProses();
-      prosesMapCache = {};
-      prosesData.forEach((p) => {
-        prosesMapCache[String(p.idproses).trim()] = p.nama_proses;
-      });
+      prosesMapCache = Object.fromEntries(
+        prosesData.map((p) => [String(p.idproses).trim(), p.nama_proses])
+      );
     }
 
+    // 6️⃣ Loop target proses dan cari yang bermasalah
     const targetProses = ["1004", "1005", "1006", "1007"];
     const hasil = [];
 
-    kodeChecklistList.forEach((kode) => {
-      const prosesPerChecklist = dataMap[kode] || [];
-      const prosesBermasalah = targetProses
-        .map((id) => {
-          const item = prosesPerChecklist.find(
-            (p) => String(p.idproses).trim() === String(id).trim()
-          );
-          const selesai = item?.selesai?.trim();
-          if (!item || !selesai || selesai === "00:00:00") {
-            return {
-              idproses: id,
-              nama_proses:
-                item?.nama_proses || prosesMapCache[id] || `Proses ${id}`,
-            };
-          }
-          return null;
-        })
-        .filter(Boolean);
+    for (const kode of kodeChecklistList) {
+      const prosesList = dataMap[kode];
+      if (!prosesList) continue;
+
+      const prosesLookup = Object.fromEntries(
+        prosesList.map((p) => [String(p.idproses).trim(), p])
+      );
+
+      const prosesBermasalah = [];
+      for (const id of targetProses) {
+        const item = prosesLookup[id];
+        const selesai = item?.selesai?.trim();
+        if (!item || !selesai || selesai === "00:00:00") {
+          prosesBermasalah.push({
+            idproses: id,
+            nama_proses:
+              item?.nama_proses || prosesMapCache[id] || `Proses ${id}`,
+          });
+        }
+      }
 
       if (prosesBermasalah.length > 0) {
-        hasil.push({
-          kode_checklist: kode,
-          proses: prosesBermasalah,
-        });
+        hasil.push({ kode_checklist: kode, proses: prosesBermasalah });
       }
-    });
+    }
 
     return api.ok(res, hasil);
   } catch (err) {
-    console.error(err);
+    console.error("❌ validate1007 error:", err);
     return api.error(res, "Validate Error", 500);
   }
 };
