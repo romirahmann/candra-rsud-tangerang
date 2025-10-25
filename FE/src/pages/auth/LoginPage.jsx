@@ -14,9 +14,9 @@ export function LoginPage() {
   const [formLogin, setFormLogin] = useState({ username: "", password: "" });
   const dispatch = useDispatch();
   const { showAlert } = useAlert();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
   const router = useRouter();
-  // Reset loading & error saat mount
+
   useEffect(() => {
     dispatch(loginFailure(null));
   }, []);
@@ -36,36 +36,33 @@ export function LoginPage() {
     }
 
     try {
-      let res = await api.post("/auth/login", formLogin);
-      let data = res.data.data;
+      const res = await api.post("/auth/login", formLogin);
+      const data = res.data.data;
 
       const mockUser = data.userData;
       const mockToken = data.token;
 
       dispatch(loginSuccess({ user: mockUser, token: mockToken }));
       showAlert("success", "Login Successfully!");
-      if (mockUser.jabatan === "User") {
-        router.navigate({ to: "/scanning" });
-        return;
-      }
-      router.navigate({ to: "/" });
-    } catch (err) {
+      router.navigate({ to: mockUser.jabatan === "User" ? "/scanning" : "/" });
+    } catch {
       dispatch(loginFailure("Wrong username or password!"));
       showAlert("error", "Wrong username or password!");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-900 px-4">
-      <div className="relative w-full max-w-md bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 px-4">
+      <div className="relative w-full max-w-md bg-[#1e3a8a] bg-opacity-95 rounded-2xl shadow-2xl p-8 border border-blue-300/30">
         {/* Logo & Title */}
         <div className="text-center mb-6">
           <img
             src="/RSUD-KAB-TANGERANG/images/logo_candra.png"
             alt="Logo"
-            className="w-14 mx-auto mb-3 animate-pulse"
+            className="w-14 mx-auto mb-3"
+            style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.5))" }}
           />
-          <h1 className="text-3xl font-extrabold text-white tracking-wide">
+          <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-sm">
             CANDRA
           </h1>
           <p className="text-gray-200 text-sm mt-1">RSUD Kabupaten Tangerang</p>
@@ -76,7 +73,7 @@ export function LoginPage() {
           <div>
             <label
               htmlFor="username"
-              className="block text-sm font-medium text-gray-200 mb-1"
+              className="block text-sm font-medium text-gray-100 mb-1"
             >
               Username
             </label>
@@ -86,7 +83,7 @@ export function LoginPage() {
               name="username"
               value={formLogin.username}
               onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg bg-white/80 text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all"
+              className="w-full px-4 py-2 rounded-lg bg-white text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               placeholder="Enter your username"
               required
             />
@@ -95,7 +92,7 @@ export function LoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-200 mb-1"
+              className="block text-sm font-medium text-gray-100 mb-1"
             >
               Password
             </label>
@@ -105,7 +102,7 @@ export function LoginPage() {
               name="password"
               value={formLogin.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg bg-white/80 text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all"
+              className="w-full px-4 py-2 rounded-lg bg-white text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               placeholder="••••••••"
               required
             />
@@ -144,12 +141,12 @@ export function LoginPage() {
         </form>
 
         {/* Footer */}
-        <div className="text-center mt-6 text-xs text-gray-300">
+        <div className="text-center mt-6 text-xs text-gray-200">
           © {new Date().getFullYear()} IT Developer. All rights reserved.
         </div>
 
-        {/* Decorative Blur Glow */}
-        <div className="absolute inset-0 -z-10 blur-3xl opacity-25 bg-gradient-to-tr from-blue-400 via-cyan-300 to-purple-500" />
+        {/* Decorative Glow */}
+        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-tr from-blue-400 via-cyan-300 to-purple-500 opacity-10"></div>
       </div>
     </div>
   );
