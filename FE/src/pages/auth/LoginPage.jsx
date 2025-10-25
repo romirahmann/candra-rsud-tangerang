@@ -56,7 +56,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-blue-900 px-4">
       <div className="relative w-full max-w-md bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20">
         {/* Logo & Title */}
         <div className="text-center mb-6">
