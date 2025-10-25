@@ -6,7 +6,7 @@ const {
 const moment = require("moment");
 
 const getAllCandra = async (q) => {
-  const db = getDBData();
+  const db = await getDBData();
 
   let query = `
     SELECT 
@@ -46,14 +46,14 @@ const getAllCandra = async (q) => {
 };
 
 const getAllDataMR = async () => {
-  const db = getDBData();
+  const db = await getDBData();
   const query = `SELECT * FROM tblDataMR`;
 
   const result = await db.query(query);
   return result;
 };
 const getAllDataMR3 = async () => {
-  const db = getDBData();
+  const db = await getDBData();
   const query = `SELECT * FROM tblDataMRt3`;
 
   const result = await db.query(query);
@@ -61,7 +61,7 @@ const getAllDataMR3 = async () => {
 };
 
 const getQty = async () => {
-  const db = getDBQty();
+  const db = await getDBQty();
   const query = `
       SELECT subquery.NoMR, subquery.totalPages, Query1.[File Path] 
       FROM (
@@ -77,7 +77,7 @@ const getQty = async () => {
 };
 
 const clearData = async () => {
-  const db = getDbRealQty();
+  const db = await getDbRealQty();
   let query = `DELETE FROM ExportTable;`;
   const result = await db.query(query);
   return result;

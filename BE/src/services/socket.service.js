@@ -11,7 +11,7 @@ function init(server) {
   });
 
   io.on("connection", (socket) => {
-    console.log("🔌 WebSocket client connected:", socket.id);
+    // console.log("🔌 WebSocket client connected:", socket.id);
 
     // Kirim data awal
     socket.emit("update_data", realtimeData);

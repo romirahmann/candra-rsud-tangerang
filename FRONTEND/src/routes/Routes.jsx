@@ -44,6 +44,10 @@ const dashboardRoute = createRoute({
 // 🔹 Tambahkan route login publik
 import { LoginPage } from "../pages/auth/LoginPage";
 import { UserPage } from "../pages/main/kelolaData/UserPage";
+import { TargetPage } from "../pages/main/kelolaData/TargetPage";
+import { ProsesPage } from "../pages/main/kelolaData/ProsesPage";
+import { CandraPage } from "../pages/main/kelolaData/CandraPage";
+import { ScanPage } from "../pages/main/ScanPage";
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/login",
@@ -56,11 +60,37 @@ const userRoute = createRoute({
   path: "/data-users",
   component: UserPage,
 });
-
+const targetRoute = createRoute({
+  getParentRoute: () => mainLayout,
+  path: "/data-target",
+  component: TargetPage,
+});
+const prosesRoute = createRoute({
+  getParentRoute: () => mainLayout,
+  path: "/data-proses",
+  component: ProsesPage,
+});
+const candraRoute = createRoute({
+  getParentRoute: () => mainLayout,
+  path: "/data-candra",
+  component: CandraPage,
+});
+const scanRoute = createRoute({
+  getParentRoute: () => mainLayout,
+  path: "/scanning",
+  component: ScanPage,
+});
 // 🔹 Gabungkan semuanya
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  mainLayout.addChildren([dashboardRoute, userRoute]),
+  mainLayout.addChildren([
+    dashboardRoute,
+    userRoute,
+    targetRoute,
+    prosesRoute,
+    candraRoute,
+    scanRoute,
+  ]),
 ]);
 
 // 🔹 Buat router

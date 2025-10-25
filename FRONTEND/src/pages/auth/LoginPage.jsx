@@ -44,6 +44,10 @@ export function LoginPage() {
 
       dispatch(loginSuccess({ user: mockUser, token: mockToken }));
       showAlert("success", "Login Successfully!");
+      if (mockUser.jabatan === "User") {
+        router.navigate({ to: "/scanning" });
+        return;
+      }
       router.navigate({ to: "/" });
     } catch (err) {
       dispatch(loginFailure("Wrong username or password!"));

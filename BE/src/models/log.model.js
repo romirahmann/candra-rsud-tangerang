@@ -1,7 +1,7 @@
 const { getDB } = require("../database/db.config");
 
 const getAllLog = async (q = "") => {
-  const db = getDB();
+  const db = await getDB();
   let query = "SELECT * FROM tblLog";
   if (q) {
     const safeQ = q.replace(/'/g, "''");
@@ -12,14 +12,14 @@ const getAllLog = async (q = "") => {
 };
 
 const getByStatus = async (status) => {
-  const db = getDB();
+  const db = await getDB();
   let query = `SELECT * FROM tblLog WHERE status = ${status}`;
   const result = await db.query(query);
   return result;
 };
 
 const create = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const { username, description, status, createAt, action } = data;
 
   // Gunakan Parameterized Query untuk keamanan

@@ -100,6 +100,8 @@ const createCandra = async (req, res) => {
 
   try {
     const inserted = await model.createCandra(req.body);
+    const io = getIO();
+    io.emit("candra_created", "Candra successfully created");
     return api.ok(res, { inserted }, "Candra created successfully");
   } catch (error) {
     console.error("❌ Error creating Candra:", error);
@@ -186,8 +188,12 @@ const updateCandra = async (req, res) => {
     return api.error(res, "kode_checklist and idproses are required", 400);
 
   try {
+    console.log(data);
     const updated = await model.updateCandra(kode_checklist, idproses, data);
+
     if (!updated) return api.error(res, "Candra not found or no changes", 404);
+    const io = getIO();
+    io.emit("candra_updated", "Candra successfully updated");
     return api.ok(res, "Candra updated successfully");
   } catch (error) {
     console.error("❌ Error updating Candra:", error);
@@ -217,9 +223,8 @@ const finishedProses = async (req, res) => {
     if (updated === 0)
       return api.error(res, "Data tidak ditemukan atau tidak berubah", 404);
 
-    getIO().emit("finished_process", {
-      message: `Checklist ${kode_checklist} proses ${idproses} selesai!`,
-    });
+    const io = getIO();
+    io.emit("candra_finished", "Candra successfully finished process");
 
     return api.ok(res, "Candra updated successfully");
   } catch (error) {
@@ -252,7 +257,8 @@ const finishedProsesScan = async (req, res) => {
 
     if (updated === 0)
       return api.error(res, "Candra tidak ditemukan atau tidak berubah", 404);
-
+    const io = getIO();
+    io.emit("candra_finished_proses", "Candra successfully finished process");
     return api.ok(res, "Proses scan selesai");
   } catch (error) {
     console.error("❌ Error finishedProsesScan:", error);
@@ -266,6 +272,8 @@ const deleteCandra = async (req, res) => {
   try {
     const deleted = await model.deleteCandra(id);
     if (!deleted) return api.error(res, "Candra not found", 404);
+    const io = getIO();
+    io.emit("candra_deleted", "Candra successfully deleted");
     return api.ok(res, { deleted }, "Candra deleted successfully");
   } catch (error) {
     console.error("❌ Error deleting Candra:", error);

@@ -1,6 +1,7 @@
 const argon2 = require("argon2");
 const model = require("../../models/user.model");
 const api = require("../../tools/common");
+const { getIO } = require("../../services/socket.service");
 
 const register = async (req, res) => {
   const newUser = req.body;
@@ -15,6 +16,9 @@ const register = async (req, res) => {
 
     newUser.password = await hashPassword(newUser.password);
     let data = await model.createUser(newUser);
+
+    const io = getIO();
+    io.emit("user_created", data);
 
     return api.ok(res, { message: "Create user successfully!", data: data });
   } catch (e) {
@@ -73,11 +77,19 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedData = req.body;
+    let updatedData = req.body;
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0"); // Tambahkan leading zero
+    const day = String(now.getDate()).padStart(2, "0");
+
+    updatedData.trn_date = `${year}/${month}/${day}`;
 
     let result = await model.updateUser(id, updatedData);
     if (result.affectedRows === 0) return api.error(res, "User not found", 404);
-
+    const io = getIO();
+    io.emit("user_updated", "User updated successfully");
     return api.ok(res, { message: "User updated successfully" });
   } catch (error) {
     console.error("❌ Error updating user:", error);
@@ -90,6 +102,8 @@ const deleteUser = async (req, res) => {
     const { id } = req.params;
     let result = await model.deleteUser(id);
     if (result.affectedRows === 0) return api.error(res, "User not found", 404);
+    const io = getIO();
+    io.emit("user_deleted", "User deleted successfully");
     return api.ok(res, { message: "User deleted successfully" });
   } catch (error) {
     console.error("❌ Error deleting user:", error);

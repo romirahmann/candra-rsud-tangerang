@@ -8,7 +8,7 @@ export function Table({
   rowsPerPage = 10,
 }) {
   const [sortConfig, setSortConfig] = useState({
-    key: "createdAt",
+    key: "",
     direction: "desc",
   });
   const [currentPage, setCurrentPage] = useState(1);

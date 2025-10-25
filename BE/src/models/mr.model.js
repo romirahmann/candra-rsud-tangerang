@@ -3,7 +3,7 @@ const { getDBKcp } = require("../database/update.config");
 const moment = require("moment");
 
 const getAllDataMR = async (q) => {
-  const db = getDB();
+  const db = await getDB();
   let query =
     "SELECT NoUrut, NoMR, NamaPasien, Tanggal, Qty_Image, Kode_Checklist, Urut, Mulai, Selesai, rumahsakit, nobox, FilePath FROM tblDataMR";
 
@@ -11,14 +11,14 @@ const getAllDataMR = async (q) => {
 };
 
 const getAllNonaktifMR = async () => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT NoUrut, NoMR, NamaPasien, Tanggal, Qty_Image, Kode_Checklist, Urut, Mulai, Selesai, rumahsakit, nobox, FilePath FROM tblDataMR_Doubel`;
   const result = await db.query(query);
   return result;
 };
 
 const dataExisting = async (NoUrut, Kode_Checklist) => {
-  const db = getDB();
+  const db = await getDB();
 
   const query = `
     SELECT COUNT(*) AS total_count FROM tblDataMR 
@@ -30,7 +30,7 @@ const dataExisting = async (NoUrut, Kode_Checklist) => {
 };
 
 const getDataMRByKeys = async (NoUrut, Kode_Checklist) => {
-  const db = getDB();
+  const db = await getDB();
 
   // Buat query secara langsung tanpa parameterized query
   const query = `
@@ -44,7 +44,7 @@ const getDataMRByKeys = async (NoUrut, Kode_Checklist) => {
 };
 
 const getDataMRByChecklist = async (Kode_Checklist) => {
-  const db = getDB();
+  const db = await getDB();
 
   // Buat query secara langsung tanpa parameterized query
   const query = `
@@ -58,7 +58,7 @@ const getDataMRByChecklist = async (Kode_Checklist) => {
 };
 
 const createDataMR = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const {
     NoUrut,
     NoMR,
@@ -88,7 +88,7 @@ const createDataMR = async (data) => {
 };
 
 const createDataMR_Double = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const {
     NoUrut,
     NoMR,
@@ -115,7 +115,7 @@ const createDataMR_Double = async (data) => {
 };
 
 const dataExistingByMR = async (NoMR) => {
-  const db = getDB();
+  const db = await getDB();
 
   const query = `
     SELECT COUNT(*) AS total_count FROM tblDataMR 
@@ -127,7 +127,7 @@ const dataExistingByMR = async (NoMR) => {
 };
 
 const updateQtyMR = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const { NoMR, totalPages, nobox } = data; // Ambil properti yang tidak ada spasi
   const filePath = data["File Path"]; // Ambil "File Path" menggunakan bracket notation
 
@@ -144,14 +144,14 @@ const updateQtyMR = async (data) => {
 };
 
 const getQtyByMR = async () => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT Kode_Checklist, SUM(Qty_Image) AS totalPages FROM tblDataMR GROUP BY Kode_Checklist;`;
   const result = await db.query(query);
   return result;
 };
 
 const updateDataMR = async (NoUrut, Kode_Checklist, data) => {
-  const db = getDB();
+  const db = await getDB();
   const { NoMR, NamaPasien, formatedTanggal, nobox } = data;
 
   const query = `
@@ -168,21 +168,21 @@ const updateDataMR = async (NoUrut, Kode_Checklist, data) => {
 };
 
 const deleteDataMR = async (NoUrut, Kode_Checklist) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `DELETE FROM tblDataMR WHERE NoUrut = '${NoUrut}' AND Kode_Checklist = '${Kode_Checklist}'`;
   const result = await db.query(query);
   return result;
 };
 
 const deleteMRDouble = async (NoUrut, Kode_Checklist) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `DELETE FROM tblDataMR_Doubel WHERE NoUrut = '${NoUrut}' AND Kode_Checklist = '${Kode_Checklist}'`;
   const result = await db.query(query);
   return result;
 };
 
 const getAllMRt3 = async () => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   let query = `
     SELECT 
       NoUrut, NoMR, NamaPasien, Tanggal, Kode_Checklist, 
@@ -199,7 +199,7 @@ const getAllMRt3 = async () => {
 };
 
 const getMRt3ByKodeChecklist = async (kode_checklist) => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   let query = `
     SELECT NoUrut, Periode_Ranap, NoMR, NamaPasien, Tanggal, Kode_Checklist, layanan, kategori, nobox
     FROM tblDataMRt3
@@ -222,13 +222,13 @@ const getMRt3ByKodeChecklist = async (kode_checklist) => {
   return result;
 };
 const getMRt3ByKodeChecklistA2 = async (kode_checklist) => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   const query = `SELECT NoUrut, Periode_Ranap, NoMR, NamaPasien, Tanggal,  Kode_Checklist, namadokumen FROM tblDataMRt3_A2 WHERE Kode_Checklist = '${kode_checklist}'`;
   const result = await db.query(query);
   return result;
 };
 const createDataMRt3 = async (data) => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   console.log(db);
   const {
     NoUrut,
@@ -268,7 +268,7 @@ const createDataMRt3 = async (data) => {
 };
 
 const dataExistingT3 = async (NoUrut, Kode_Checklist) => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
 
   const escapeString = (str) => (str ? String(str).replace(/'/g, "''") : "");
 
@@ -283,7 +283,7 @@ const dataExistingT3 = async (NoUrut, Kode_Checklist) => {
 };
 
 const updateDataMRt3 = async (data) => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   const {
     NoUrut,
     NoMR,
@@ -315,7 +315,7 @@ const updateDataMRt3 = async (data) => {
 };
 
 const deleteMRt3 = async (data) => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   const { NoUrut, Kode_Checklist } = data;
   const query = `DELETE FROM tblDataMRt3 WHERE NoUrut = '${NoUrut}' AND Kode_Checklist = '${Kode_Checklist}' `;
   const result = await db.query(query);
@@ -324,14 +324,14 @@ const deleteMRt3 = async (data) => {
 
 // MRt3 A2
 const getAllMRt3A2 = async () => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   const query = `SELECT NoUrut, NoMR, NamaPasien, Tanggal, Qty_Image, Kode_Checklist, Mulai, Selesai, namadokumen, Periode_Ranap FROM tblDataMRt3_A2 `;
   const result = await db.query(query);
   return result;
 };
 
 const updateDataMRt3A2 = async (data) => {
-  const db = getDBKcp();
+  const db = await getDBKcp();
   const {
     NoUrut,
     NoMR,
@@ -363,7 +363,7 @@ const updateDataMRt3A2 = async (data) => {
 };
 
 const deleteMRt3A2 = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const { NoUrut, Kode_Checklist } = data;
   const query = `DELETE FROM tblDataMRt3_A2 WHERE NoUrut = '${NoUrut}' AND Kode_Checklist = '${Kode_Checklist}' `;
   const result = await db.query(query);
@@ -371,7 +371,7 @@ const deleteMRt3A2 = async (data) => {
 };
 
 const deletAllRowMrt3 = async () => {
-  const db = getDB();
+  const db = await getDB();
   const query = `DELETE FROM tblDataMRt3;`;
   const result = await db.query(query);
   return result;

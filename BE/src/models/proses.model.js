@@ -1,7 +1,7 @@
 const { getDB } = require("../database/db.config");
 
 const getAllProses = async (q) => {
-  let db = getDB();
+  let db = await getDB();
   let query = "SELECT * FROM tblproses";
   if (q) {
     const safeQ = q.replace(/'/g, "''");
@@ -14,27 +14,27 @@ const getAllProses = async (q) => {
 };
 
 const getProsesById = async (idproses) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT * FROM tblproses WHERE idproses = '${idproses}'`;
   const result = await db.query(query);
   return result[0];
 };
 const getUrutanProsesById = async (idproses) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT urutan FROM tblproses WHERE idproses = '${idproses}'`;
   const result = await db.query(query);
   return result[0];
 };
 
 const getProsesByUrutan = async (urutan) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT * FROM tblproses WHERE urutan = '${urutan}'`;
   const result = await db.query(query);
   return result;
 };
 
 const createProses = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const { idproses, nama_proses, urutan, trn_date } = data;
 
   const safeNamaProses = nama_proses.replace(/'/g, "''"); // Escape single quotes
@@ -47,7 +47,7 @@ const createProses = async (data) => {
 };
 
 const updateProses = async (id, data) => {
-  const db = getDB();
+  const db = await getDB();
   const { idproses, nama_proses, urutan, trn_date } = data;
 
   const safeNamaProses = nama_proses.replace(/'/g, "''");
@@ -64,7 +64,7 @@ const updateProses = async (id, data) => {
 };
 
 const deleteProses = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `DELETE FROM tblproses WHERE id = ${id}`;
   const result = await db.query(query);
   return result.count; // ✅ Return jumlah baris yang dihapus

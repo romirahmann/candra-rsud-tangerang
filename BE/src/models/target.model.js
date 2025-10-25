@@ -1,7 +1,7 @@
 const { getDB } = require("../database/db.config");
 
 const getAllTargets = async (q = "") => {
-  const db = getDB();
+  const db = await getDB();
 
   let query = "SELECT * FROM tbltarget";
 
@@ -15,13 +15,13 @@ const getAllTargets = async (q = "") => {
 };
 
 const getTargetById = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const result = await db.query("SELECT * FROM tbltarget WHERE id = ?", [id]);
   return result.length > 0 ? result[0] : null;
 };
 
 const createTarget = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const { nama, nilai } = data;
 
   const query = `INSERT INTO tbltarget (nama, nilai) VALUES ('${nama}', ${nilai})`;
@@ -31,7 +31,7 @@ const createTarget = async (data) => {
 };
 
 const updateTarget = async (id, data) => {
-  const db = getDB();
+  const db = await getDB();
   const { nama, nilai } = data;
 
   const query = `UPDATE tbltarget SET nama = '${nama}', nilai = ${nilai} WHERE id = ${id}`;
@@ -41,7 +41,7 @@ const updateTarget = async (id, data) => {
 };
 
 const deleteTarget = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `DELETE FROM tbltarget WHERE id = ${id}`;
   const result = await db.query(query);
 

@@ -41,8 +41,7 @@ async function connectDB() {
 async function getDB() {
   try {
     if (!db) return await connectDB();
-    // test query ringan untuk validasi koneksi
-    await db.query("SELECT 1");
+
     return db;
   } catch {
     console.warn("⚠️ Connection lost, reconnecting...");

@@ -35,12 +35,6 @@ export const Sidebar = memo(
         <nav className="mt-4">
           <ul className="space-y-1">
             <SidebarItem
-              to="/"
-              icon={FaTachometerAlt}
-              label="Dashboard"
-              isSidebarOpen={isSidebarOpen}
-            />
-            <SidebarItem
               to="/scanning"
               icon={MdDocumentScanner}
               label="Scanning"
@@ -49,6 +43,12 @@ export const Sidebar = memo(
 
             {userLogin?.jabatan !== "User" && (
               <>
+                <SidebarItem
+                  to="/"
+                  icon={FaTachometerAlt}
+                  label="Dashboard"
+                  isSidebarOpen={isSidebarOpen}
+                />
                 <SidebarItem
                   to="/checksheet"
                   icon={FaTasks}

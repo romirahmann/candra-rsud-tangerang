@@ -1,7 +1,7 @@
 const { getDB } = require("../database/db.config");
 
 const getAllDokumen = async (q) => {
-  const db = getDB();
+  const db = await getDB();
   let query = "SELECT * FROM tbldokumen";
   if (q) {
     const safeQ = q.replace(/'/g, "''");
@@ -12,7 +12,7 @@ const getAllDokumen = async (q) => {
 };
 
 const getByKode = async (kode) => {
-  const db = getDB();
+  const db = await getDB();
   const result = await db.query(
     `SELECT * FROM tbldokumen WHERE kodedok = '${kode}'`
   );
@@ -20,7 +20,7 @@ const getByKode = async (kode) => {
 };
 
 const createDokumen = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const { kodedok, namadok, kategori } = data;
 
   const query = `
@@ -33,7 +33,7 @@ const createDokumen = async (data) => {
 };
 
 const updateDokumen = async (kode, data) => {
-  const db = getDB();
+  const db = await getDB();
   const { namadok, kategori } = data;
 
   const query = `
@@ -47,7 +47,7 @@ const updateDokumen = async (kode, data) => {
 };
 
 const deleteDokumen = async (kode) => {
-  const db = getDB();
+  const db = await getDB();
 
   const query = `DELETE FROM tbldokumen WHERE kodedok = '${kode}'`;
 
@@ -56,7 +56,7 @@ const deleteDokumen = async (kode) => {
 };
 
 const getAllDoklin = async () => {
-  const db = getDB();
+  const db = await getDB();
   let query = "SELECT * FROM tblDoklin";
   const result = await db.query(query);
   return result;

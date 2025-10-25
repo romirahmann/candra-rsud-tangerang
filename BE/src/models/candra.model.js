@@ -53,7 +53,7 @@ const toInt = (val, def = 0) => {
 };
 
 const getAllCandra = async () => {
-  const db = getDB();
+  const db = await getDB();
   const query = `
     SELECT 
       id,
@@ -78,7 +78,7 @@ const getAllCandra = async () => {
 };
 
 const getCandraByChecklist = async (Kode_Checklist) => {
-  const db = getDB();
+  const db = await getDB();
   const safeKode = escapeString(Kode_Checklist);
 
   const query = `
@@ -106,7 +106,7 @@ const getCandraByChecklist = async (Kode_Checklist) => {
 };
 
 const dataExisting = async (kode_checklist, idproses) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `
     SELECT COUNT(*) AS cnt
     FROM tblcandra
@@ -118,7 +118,7 @@ const dataExisting = async (kode_checklist, idproses) => {
 };
 
 const getAllByDateNow = async () => {
-  const db = getDB();
+  const db = await getDB();
 
   // ✅ Buat tanggal hari ini dalam format MM/DD/YYYY (format native Access)
   const today = new Date();
@@ -159,7 +159,7 @@ const getAllByDateNow = async () => {
 };
 
 const getCandraByKeys = async (kode_checklist, idproses) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `
     SELECT *
     FROM tblcandra
@@ -171,13 +171,13 @@ const getCandraByKeys = async (kode_checklist, idproses) => {
 };
 
 const getAllKeys = async () => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT kode_checklist, idproses FROM tblcandra`;
   return await db.query(query);
 };
 
 const createCandra = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const {
     kode_checklist,
     idproses,
@@ -212,7 +212,7 @@ const createCandra = async (data) => {
 };
 
 const createCandraFromScan = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const {
     kode_checklist,
     idproses,
@@ -248,7 +248,7 @@ const createCandraFromScan = async (data) => {
 };
 
 const updateCandra = async (kode_checklist, idproses, data) => {
-  const db = getDB();
+  const db = await getDB();
   const {
     nik,
     nama_proses,
@@ -278,7 +278,7 @@ const updateCandra = async (kode_checklist, idproses, data) => {
 };
 
 const finishedProses = async (kode_checklist, idproses, selesai_formatted) => {
-  const db = getDB();
+  const db = await getDB();
 
   const q = `
     UPDATE tblcandra SET selesai = ${toAccessTime(selesai_formatted)}
@@ -297,7 +297,7 @@ const finishedProsesScan = async (
   selesai_formatted,
   qty_image
 ) => {
-  const db = getDB();
+  const db = await getDB();
 
   const q = `
     UPDATE tblcandra SET 
@@ -312,7 +312,7 @@ const finishedProsesScan = async (
 };
 
 const updateCandraByMR = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   let { Kode_Checklist, totalPages } = data;
   const qty = toInt(totalPages, 0);
   const q = `
@@ -325,7 +325,7 @@ const updateCandraByMR = async (data) => {
 };
 
 const deleteCandra = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const numId = toInt(id, null);
   if (numId === null) throw new Error("Invalid id untuk deleteCandra");
   const q = `DELETE FROM tblcandra WHERE id = ${numId}`;
@@ -334,7 +334,7 @@ const deleteCandra = async (id) => {
 };
 
 const getCandraByDate1001 = async (date) => {
-  const db = getDB();
+  const db = await getDB();
   const d = new Date(date);
   if (isNaN(d)) throw new Error("Tanggal tidak valid (getCandraByDate1001)");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -351,7 +351,7 @@ const getCandraByDate1001 = async (date) => {
 };
 
 const getCandraFilterByKode = async (kodeList = []) => {
-  const db = getDB();
+  const db = await getDB();
   if (!Array.isArray(kodeList) || kodeList.length === 0) return [];
 
   const inClause = kodeList.map((k) => `'${escapeString(k)}'`).join(",");

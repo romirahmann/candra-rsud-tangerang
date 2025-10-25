@@ -1,7 +1,7 @@
 const { getDB } = require("../database/db.config");
 
 const getAllUsers = async (q = "") => {
-  const db = getDB();
+  const db = await getDB();
   let query = "SELECT * FROM Users";
 
   if (q) {
@@ -14,14 +14,14 @@ const getAllUsers = async (q = "") => {
 };
 
 const getUserById = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT * FROM Users WHERE id = ${id}`;
   const result = await db.query(query);
   return result.length > 0 ? result[0] : null;
 };
 
 const createUser = async (data) => {
-  const db = getDB();
+  const db = await getDB();
   const { username, email, password, jabatan, trn_date } = data;
   const result = await db.query(
     `INSERT INTO Users (username, email, password, jabatan, trn_date) VALUES ('${username}', '${email}', '${password}', '${jabatan}', ${trn_date})`
@@ -31,7 +31,8 @@ const createUser = async (data) => {
 };
 
 const updateUser = async (id, data) => {
-  const db = getDB();
+  const db = await getDB();
+
   const { username, email, password, jabatan, trn_date } = data;
 
   const query = `
@@ -50,7 +51,7 @@ const updateUser = async (id, data) => {
 };
 
 const deleteUser = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `DELETE FROM Users WHERE id = ${id}`;
   const result = await db.query(query);
   return result;

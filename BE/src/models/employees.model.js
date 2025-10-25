@@ -1,7 +1,7 @@
 const { getDB } = require("../database/db.config");
 
 const getAllKaryawan = async (q) => {
-  const db = getDB();
+  const db = await getDB();
   let query = "SELECT * FROM tblkaryawan";
   if (q) {
     const safeQ = q.replace(/'/g, "''");
@@ -12,19 +12,19 @@ const getAllKaryawan = async (q) => {
 };
 
 const getKaryawanById = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const result = await db.query("SELECT * FROM tblkaryawan WHERE id = ", id);
   return result.length > 0 ? result[0] : null;
 };
 const getKaryawanByNIK = async (nik) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `SELECT * FROM tblkaryawan WHERE nik ='${nik}'`;
   const result = await db.query(query);
   return result[0];
 };
 
 const createKaryawan = async (formattedDate, data) => {
-  const db = getDB();
+  const db = await getDB();
   const { nik, nama_karyawan, submittedby } = data;
 
   // Gunakan Parameterized Query untuk keamanan
@@ -35,7 +35,7 @@ const createKaryawan = async (formattedDate, data) => {
 };
 
 const updateKaryawan = async (id, data) => {
-  const db = getDB();
+  const db = await getDB();
   const { trn_date, nik, nama_karyawan, submittedby } = data;
 
   // Pastikan semua input valid untuk menghindari SQL Injection
@@ -56,7 +56,7 @@ const updateKaryawan = async (id, data) => {
 };
 
 const deleteKaryawan = async (id) => {
-  const db = getDB();
+  const db = await getDB();
   const query = `DELETE FROM tblkaryawan WHERE id = ${id}`;
   const result = await db.query(query);
 
