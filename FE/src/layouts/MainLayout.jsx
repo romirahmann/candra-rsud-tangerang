@@ -12,7 +12,6 @@ export function MainLayout() {
 
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-
   const userLogin = useMemo(() => user, [user]);
 
   const handleLogout = () => {
@@ -23,21 +22,31 @@ export function MainLayout() {
   if (!isAuthenticated || !userLogin) return <LoadingScreen />;
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-[#f2f4f8] text-gray-800 overflow-hidden">
+      {/* Sidebar */}
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         userLogin={userLogin}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#fafafa]">
         <Topbar
           userLogin={userLogin}
           isUserPopupOpen={isUserPopupOpen}
           setIsUserPopupOpen={setIsUserPopupOpen}
           onLogout={handleLogout}
         />
-        <main className="flex-1 overflow-auto p-4 bg-gray-50">
+
+        {/* Content Area */}
+        <main
+          className="flex-1 overflow-auto p-4"
+          style={{
+            background:
+              "linear-gradient(to bottom right, #f7f8fa 0%, #eef1f5 100%)",
+          }}
+        >
           <Outlet />
         </main>
       </div>

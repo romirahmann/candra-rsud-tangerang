@@ -52,17 +52,19 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 px-4">
-      <div className="relative w-full max-w-md bg-[#1e3a8a] bg-opacity-95 rounded-2xl shadow-2xl p-8 border border-blue-300/30">
+    <div className="min-h-screen flex items-center justify-center bg-blue-900 px-4">
+      <div className="relative w-full max-w-md bg-blue-950 rounded-2xl shadow-lg p-8 border border-blue-800">
         {/* Logo & Title */}
         <div className="text-center mb-6">
           <img
             src="/RSUD-KAB-TANGERANG/images/logo_candra.png"
             alt="Logo"
             className="w-14 mx-auto mb-3"
-            style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.5))" }}
+            style={{
+              filter: "drop-shadow(0 0 6px rgba(255,255,255,0.6))",
+            }}
           />
-          <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-sm">
+          <h1 className="text-3xl font-extrabold text-white tracking-wide">
             CANDRA
           </h1>
           <p className="text-gray-200 text-sm mt-1">RSUD Kabupaten Tangerang</p>
@@ -145,8 +147,15 @@ export function LoginPage() {
           © {new Date().getFullYear()} IT Developer. All rights reserved.
         </div>
 
-        {/* Decorative Glow */}
-        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-tr from-blue-400 via-cyan-300 to-purple-500 opacity-10"></div>
+        {/* Fake Glow Border (Compatible for Win7 Chrome) */}
+        <div
+          className="absolute inset-0 -z-10 rounded-2xl"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(59,130,246,0.5) 0%, rgba(147,197,253,0.3) 50%, rgba(168,85,247,0.4) 100%)",
+            filter: "blur(40px)",
+          }}
+        />
       </div>
     </div>
   );
